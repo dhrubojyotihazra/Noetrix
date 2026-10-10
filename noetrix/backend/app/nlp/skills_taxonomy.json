@@ -1,0 +1,35 @@
+{
+  "programming_languages": [
+    "python", "javascript", "typescript", "java", "c++", "c#", "go", "golang", "rust", 
+    "ruby", "php", "swift", "kotlin", "scala", "r", "matlab", "dart", "html", "css", "sql", "bash", "shell"
+  ],
+  "frontend": [
+    "react", "react.js", "next.js", "vue", "vue.js", "angular", "svelte", "tailwind", "tailwind css",
+    "redux", "zustand", "remix", "webpack", "vite", "sass", "bootstrap", "graphql", "html5", "css3"
+  ],
+  "backend": [
+    "node.js", "express", "fastapi", "django", "flask", "spring", "spring boot", "asp.net",
+    ".net", "ruby on rails", "nestjs", "gin", "grpc", "rest api", "microservices", "websockets"
+  ],
+  "databases": [
+    "postgresql", "postgres", "mysql", "mongodb", "redis", "elasticsearch", "sqlite",
+    "dynamodb", "cassandra", "firebase", "supabase", "mariadb", "oracle", "snowflake", "neo4j"
+  ],
+  "cloud_devops": [
+    "aws", "amazon web services", "azure", "gcp", "google cloud", "docker", "kubernetes", "k8s",
+    "terraform", "ci/cd", "github actions", "gitlab ci", "jenkins", "ansible", "helm", "linux", "nginx", "prometheus", "grafana"
+  ],
+  "ai_ml_data": [
+    "machine learning", "deep learning", "nlp", "computer vision", "tensorflow", "pytorch",
+    "scikit-learn", "pandas", "numpy", "transformers", "hugging face", "llm", "langchain", "llamaindex",
+    "openai", "generative ai", "data analysis", "data engineering", "spark", "apache spark", "airflow"
+  ],
+  "security_systems": [
+    "cybersecurity", "oauth", "jwt", "penetration testing", "encryption", "soc2", "gdpr",
+    "owasp", "identity management", "iam", "siem", "zero trust"
+  ],
+  "product_management": [
+    "agile", "scrum", "kanban", "jira", "product roadmapping", "user research", "a/b testing",
+    "stakeholder management", "kpi", "okr", "system design", "continuous integration"
+  ]
+}

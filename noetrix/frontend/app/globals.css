@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: #f6efe3;
+  --card-surface: #fdfaf4;
+  --ink: #0c0f17;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+/* Seamful Interactive Orb Keyframes */
+@keyframes seamfulOrbDrift {
+  50% {
+    transform: translate(-14px, 12px) scale(1.02);
+  }
+}
+
+@keyframes seamfulOrbBob {
+  0%, 100% {
+    transform: rotate(6deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+@keyframes seamfulOrbHover {
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.seamful-orb .o-layer {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.45s cubic-bezier(0.22, 0.9, 0.24, 1);
+  transform: translate3d(calc(var(--px, 0) * var(--depth)), calc(var(--py, 0) * var(--depth)), 0);
+}
+
+.seamful-orb .o-disc {
+  animation: seamfulOrbDrift 13s ease-in-out infinite;
+}
+
+.seamful-orb .o-blob {
+  animation: seamfulOrbBob 5s ease-in-out infinite;
+}
+
+.seamful-orb .o-mark {
+  animation: seamfulOrbHover 6.5s ease-in-out infinite;
+}

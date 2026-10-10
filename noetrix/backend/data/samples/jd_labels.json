@@ -1,0 +1,50 @@
+[
+  {
+    "id": "jd_01",
+    "title": "Associate / Junior ML Engineer - AI Platforms",
+    "text": "Associate / Junior Machine Learning Engineer (AI Platforms)\nWe are seeking a Junior ML Engineer to join our AI Platform team. Requirements:\n- Bachelor's degree in Computer Science, Data Science, or related field\n- 1+ years practical experience with Python, PyTorch, Scikit-Learn, and SQL\n- Hands-on familiarity with Docker and building REST APIs using FastAPI or Flask\n- Strong foundation in machine learning pipelines, data processing with Pandas and NumPy\nNice to have:\n- Experience with Hugging Face transformers, CI/CD pipelines, or cloud deployment\nResponsibilities:\n- Assist in training and evaluating baseline predictive models\n- Package ML models into containerized microservices for batch and real-time inference",
+    "expected_must_have_skills": ["python", "pytorch", "scikit-learn", "sql", "docker", "fastapi", "pandas", "numpy"],
+    "expected_min_experience_years": 1.0,
+    "expected_education": "Bachelor"
+  },
+  {
+    "id": "jd_02",
+    "title": "Senior Backend Engineer",
+    "text": "Senior Backend Engineer (Python / FastAPI)\nRequirements:\n- 5+ years of software engineering experience in backend systems\n- Strong proficiency in Python, FastAPI, Docker, and PostgreSQL\n- Proven track record building high-throughput microservices and REST APIs\n- Familiarity with AWS, Kubernetes, and Redis caching\nResponsibilities:\n- Architect and scale distributed backend microservices\n- Optimize database queries and improve API response latency",
+    "expected_must_have_skills": ["python", "fastapi", "docker", "postgresql"],
+    "expected_min_experience_years": 5.0,
+    "expected_education": ""
+  },
+  {
+    "id": "jd_03",
+    "title": "Fullstack Developer (React & TypeScript)",
+    "text": "Fullstack Developer\nRequirements:\n- 3+ years experience with React, TypeScript, Next.js, and Node.js\n- Proficiency with Tailwind CSS, GraphQL, and modern state management\n- Experience writing automated unit and integration tests (Jest, Playwright)\nNice to have: Docker, CI/CD pipelines, MongoDB\nResponsibilities:\n- Build responsive, accessible user interfaces with clean architecture\n- Develop scalable backend endpoints and integrate third-party APIs",
+    "expected_must_have_skills": ["react", "typescript", "next.js", "node.js", "tailwind css", "graphql"],
+    "expected_min_experience_years": 3.0,
+    "expected_education": ""
+  },
+  {
+    "id": "jd_04",
+    "title": "Data Platform Engineer",
+    "text": "Data Platform Engineer\nWe are looking for a Data Engineer with 2+ years experience.\nMust have:\n- Solid proficiency in SQL, Python, Spark, and PostgreSQL\n- Hands-on experience building automated ETL pipelines and data warehouses\n- Understanding of Docker and Git version control\nNice to have: Snowflake, Airflow, AWS",
+    "expected_must_have_skills": ["sql", "python", "spark", "postgresql", "docker", "git"],
+    "expected_min_experience_years": 2.0,
+    "expected_education": ""
+  },
+  {
+    "id": "jd_05",
+    "title": "Computer Vision & Robotics Engineer",
+    "text": "Computer Vision Engineer\nRequirements:\n- Master's or Bachelor's in Robotics, Electrical Engineering, or Computer Science\n- 3+ years experience with Python, C++, OpenCV, and PyTorch\n- Proven experience in image segmentation, object detection, and TensorRT\nNice to have: ROS, Docker, CUDA",
+    "expected_must_have_skills": ["python", "c++", "opencv", "pytorch", "computer vision"],
+    "expected_min_experience_years": 3.0,
+    "expected_education": "Master"
+  },
+  {
+    "id": "jd_06",
+    "title": "NLP & LLM Systems Engineer",
+    "text": "NLP Systems Engineer\nRequirements:\n- 2+ years experience in Natural Language Processing and Generative AI\n- Deep proficiency with Python, Transformers, PyTorch, and LangChain\n- Experience fine-tuning open-source LLMs and building RAG pipelines\n- Familiarity with Vector Databases (ChromaDB, Pinecone) and FastAPI",
+    "expected_must_have_skills": ["nlp", "transformers", "pytorch", "langchain", "python", "fastapi"],
+    "expected_min_experience_years": 2.0,
+    "expected_education": ""
+  }
+]
