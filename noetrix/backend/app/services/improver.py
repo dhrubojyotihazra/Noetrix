@@ -261,6 +261,38 @@ def enhance_single_bullet(
             rationale="Non-bullet line preserved untouched."
         )
 
+    # Check if bullet begins with a known weak opener
+    has_weak_opener = False
+    for pattern, replacement in WEAK_OPENER_REPLACEMENTS:
+        if re.search(pattern, clean, re.IGNORECASE):
+            has_weak_opener = True
+            break
+
+    words = clean.split()
+    first_word_is_action = False
+    if words:
+        first_word_lower = words[0].lower().rstrip("ed").rstrip("d")
+        if any(v.lower().startswith(first_word_lower) for v in ACTION_VERBS):
+            first_word_is_action = True
+
+    # If already strong action-oriented phrasing without weak openers, preserve directly
+    if first_word_is_action and not has_weak_opener:
+        has_metrics = bool(re.search(r"\b\d+(\.\d+)?%?|\b\d+x\b|\$[\d,]+", clean))
+        transformed = clean[0].upper() + clean[1:]
+        if not transformed.endswith("."):
+            transformed += "."
+        return EnhanceBulletResponse(
+            original=clean,
+            enhanced=transformed,
+            keywords_included=[],
+            metrics_added=[],
+            rationale=(
+                "Strong action-oriented bullet backed by quantifiable metrics."
+                if has_metrics
+                else "Action phrasing is solid. To boost your Impact score, consider adding a real metric (e.g. speedup %, dataset size, or accuracy)."
+            )
+        )
+
     # 1. Try LLM Rewrite if enabled
     cfg = get_llm_config()
     if cfg.get("mode") == "on":
@@ -328,18 +360,29 @@ def tailor_resume_to_jd(
     strategy: str = "balanced"
 ) -> TailorResumeResponse:
     """Truthful tailoring: strengthens weak bullets, surfaces grounded skill alignments, never fabricates facts."""
-    original_score_res = score_resume_against_jd(resume, jd)
-    original_score = original_score_res.overall_score
+    try:
+        original_score_res = score_resume_against_jd(resume, jd)
+        original_score = original_score_res.overall_score
+    except Exception:
+        original_score = 50.0
 
     tailored = copy.deepcopy(resume)
     diffs: list[DiffItem] = []
     enhanced_count = 0
 
+    if tailored.skills is None:
+        tailored.skills = []
+    if tailored.work_experience is None:
+        tailored.work_experience = []
+    if tailored.projects is None:
+        tailored.projects = []
+
     # 1. Grounded Skill Suggestions (Only skills verified in resume text/projects)
     grounded_suggestions = []
-    resume_lower = resume.raw_text.lower()
-    existing_skills_lower = set(s.lower() for s in tailored.skills)
+    resume_lower = (resume.raw_text or "").lower()
+    existing_skills_lower = set(s.lower() for s in (tailored.skills or []))
 
+    jd_skills = (jd.must_have_skills or []) + (jd.nice_to_have_skills or [])
     GROUNDED_MAPPINGS = [
         ("transformers", ["distilbert", "hugging face", "huggingface", "bert"]),
         ("computer vision", ["opencv", "cv2", "image segmentation", "object detection"]),
@@ -351,7 +394,7 @@ def tailor_resume_to_jd(
     ]
 
     for canonical, evidence_list in GROUNDED_MAPPINGS:
-        if canonical not in existing_skills_lower and any(kw.lower() == canonical for kw in jd.must_have_skills + jd.nice_to_have_skills):
+        if canonical not in existing_skills_lower and any(kw.lower() == canonical for kw in jd_skills):
             if any(ev in resume_lower for ev in evidence_list):
                 tailored.skills.append(canonical)
                 grounded_suggestions.append(canonical)
@@ -362,49 +405,64 @@ def tailor_resume_to_jd(
             section="skills",
             item_id="skills_grounded",
             change_type="added",
-            original=f"{len(resume.skills)} skills",
+            original=f"{len(resume.skills or [])} skills",
             modified=f"Grounded from your project evidence: {', '.join(grounded_suggestions)}"
         ))
 
     # 2. Enhance genuine work experience bullets
-    for w_idx, work in enumerate(tailored.work_experience):
+    for w_idx, work in enumerate(tailored.work_experience or []):
         new_bullets = []
-        for b_idx, bullet in enumerate(work.bullets):
-            res = enhance_single_bullet(bullet, work.title, candidate_skills=resume.skills)
-            new_bullets.append(res.enhanced)
-
-            if res.enhanced != bullet:
-                enhanced_count += 1
-                diffs.append(DiffItem(
-                    section="experience",
-                    item_id=f"work_{w_idx}_bullet_{b_idx}",
-                    change_type="modified",
-                    original=bullet,
-                    modified=res.enhanced
-                ))
+        for b_idx, bullet in enumerate(work.bullets or []):
+            if not bullet or not bullet.strip():
+                new_bullets.append(bullet)
+                continue
+            try:
+                res = enhance_single_bullet(bullet, work.title or "", candidate_skills=tailored.skills or resume.skills)
+                new_bullets.append(res.enhanced)
+                if res.enhanced != bullet:
+                    enhanced_count += 1
+                    diffs.append(DiffItem(
+                        section="experience",
+                        item_id=f"work_{w_idx}_bullet_{b_idx}",
+                        change_type="modified",
+                        original=bullet,
+                        modified=res.enhanced
+                    ))
+            except Exception as bullet_err:
+                logger.warning(f"Failed to enhance work bullet [{w_idx}][{b_idx}]: {bullet_err}")
+                new_bullets.append(bullet)
         work.bullets = new_bullets
 
     # 3. Enhance genuine project bullets
-    for p_idx, proj in enumerate(tailored.projects):
+    for p_idx, proj in enumerate(tailored.projects or []):
         new_bullets = []
-        for b_idx, bullet in enumerate(proj.bullets):
-            res = enhance_single_bullet(bullet, proj.name, candidate_skills=resume.skills)
-            new_bullets.append(res.enhanced)
-
-            if res.enhanced != bullet:
-                enhanced_count += 1
-                diffs.append(DiffItem(
-                    section="projects",
-                    item_id=f"proj_{p_idx}_bullet_{b_idx}",
-                    change_type="modified",
-                    original=bullet,
-                    modified=res.enhanced
-                ))
+        for b_idx, bullet in enumerate(proj.bullets or []):
+            if not bullet or not bullet.strip():
+                new_bullets.append(bullet)
+                continue
+            try:
+                res = enhance_single_bullet(bullet, proj.name or "", candidate_skills=tailored.skills or resume.skills)
+                new_bullets.append(res.enhanced)
+                if res.enhanced != bullet:
+                    enhanced_count += 1
+                    diffs.append(DiffItem(
+                        section="projects",
+                        item_id=f"proj_{p_idx}_bullet_{b_idx}",
+                        change_type="modified",
+                        original=bullet,
+                        modified=res.enhanced
+                    ))
+            except Exception as proj_err:
+                logger.warning(f"Failed to enhance project bullet [{p_idx}][{b_idx}]: {proj_err}")
+                new_bullets.append(bullet)
         proj.bullets = new_bullets
 
     # Calculate post-tailoring score with the improved truthful state
-    after_score_res = score_resume_against_jd(tailored, jd)
-    after_score = after_score_res.overall_score
+    try:
+        after_score_res = score_resume_against_jd(tailored, jd)
+        after_score = after_score_res.overall_score
+    except Exception:
+        after_score = original_score
     delta = round(max(0.0, after_score - original_score), 1)
 
     return TailorResumeResponse(

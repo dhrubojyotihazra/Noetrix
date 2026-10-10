@@ -92,7 +92,7 @@ export default function CandidateEditorPage() {
       setResume(updated);
       sessionStorage.setItem("noetrix_resume", JSON.stringify(updated));
     } catch (err) {
-      console.error("Failed to enhance bullet:", err);
+      console.warn("Failed to enhance bullet:", err);
     } finally {
       setIsEnhancingBullet(null);
     }
@@ -148,7 +148,7 @@ export default function CandidateEditorPage() {
       setTailorAddedKeywords(res.added_keywords);
       setIsDiffOpen(true);
     } catch (err) {
-      console.error("Failed to tailor resume:", err);
+      console.warn("Tailoring request did not complete:", err);
     } finally {
       setIsTailoring(false);
     }
