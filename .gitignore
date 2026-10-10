@@ -19,8 +19,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!noetrix/frontend/lib/
 parts/
 sdist/
 var/
@@ -45,7 +46,5 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# External reference repositories & templates
+# External reference repositories
 references/
-seamful-a-school-for-designing-ai-products.full-page.Woblo/
-team-showcase-pro/
