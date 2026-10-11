@@ -1,5 +1,4 @@
-"""Noetrix Backend Application Entry Point."""
-
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,10 +10,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware allowing frontend communication
+# CORS middleware: read allowed origins from ALLOWED_ORIGINS env var (default localhost:3000 only, no "*")
+raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+if not allowed_origins:
+    allowed_origins = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows Vercel preview URLs, localhost, and custom domains
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
