@@ -86,3 +86,55 @@ def test_redact_preserves_newlines_across_tags():
     assert "\n" in redacted
     lines = [line.strip() for line in redacted.split("\n") if line.strip()]
     assert len(lines) >= 2, f"Lines were collapsed across newlines: {redacted}"
+
+
+def test_cache_evicts_expired_entries():
+    """Cache must evict entries that exceed TTL."""
+    import time
+    from app.genai.llm import _CACHE, _CACHE_LOCK, _evict_expired_cache, _store_in_cache
+
+    with _CACHE_LOCK:
+        _CACHE.clear()
+        # Insert an expired entry (older than 3600s)
+        _CACHE["old_key"] = (time.time() - 4000.0, SampleModel(message="old", code=1))
+        # Insert a fresh entry
+        _CACHE["fresh_key"] = (time.time(), SampleModel(message="fresh", code=2))
+
+    # Trigger eviction
+    with _CACHE_LOCK:
+        _evict_expired_cache()
+
+    assert "old_key" not in _CACHE
+    assert "fresh_key" in _CACHE
+
+
+def test_cache_capped_at_256_entries():
+    """Cache must be capped at 256 entries, evicting oldest when exceeded."""
+    import time
+    from app.genai.llm import _CACHE, _CACHE_LOCK, _store_in_cache, _MAX_CACHE_ENTRIES
+
+    with _CACHE_LOCK:
+        _CACHE.clear()
+
+    # Insert 300 entries
+    for i in range(300):
+        _store_in_cache(f"key_{i}", SampleModel(message=f"msg_{i}", code=i))
+
+    with _CACHE_LOCK:
+        assert len(_CACHE) <= _MAX_CACHE_ENTRIES
+        assert len(_CACHE) == 256
+        # Earliest keys (e.g. key_0 .. key_43) should have been evicted
+        assert "key_0" not in _CACHE
+        assert "key_299" in _CACHE
+
+
+def test_llm_timeout_env_configurable(monkeypatch):
+    """LLM_TIMEOUT must default to 20.0 and be configurable via environment."""
+    from app.genai.llm import get_llm_timeout
+
+    monkeypatch.delenv("LLM_TIMEOUT", raising=False)
+    assert get_llm_timeout() == 20.0
+
+    monkeypatch.setenv("LLM_TIMEOUT", "45.0")
+    assert get_llm_timeout() == 45.0
+

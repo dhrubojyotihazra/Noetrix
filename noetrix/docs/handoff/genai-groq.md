@@ -2,7 +2,7 @@
 
 ## 1. What Was Built (10-Line Executive Summary)
 1. Created a centralized Groq Generative AI adapter (`app/genai/llm.py`) with strict structured JSON output and in-memory SHA-256 caching.
-2. Implemented strict concurrency limiting (max 3 simultaneous calls), 15-second timeout, and HTTP 429 backoff handling.
+2. Implemented strict concurrency limiting (max 3 simultaneous calls), configurable timeout via LLM_TIMEOUT (default 20s), and HTTP 429 backoff handling.
 3. Created an automated PII redactor (`app/genai/redact.py`) ensuring zero names, emails, or phone numbers reach external APIs.
 4. Implemented hybrid Job Description criteria extraction (`app/genai/jd_extract.py`) with deterministic post-filtering against generic terms.
 5. Implemented hybrid CV structure extraction (`app/genai/cv_extract.py`) triggered only when rules parsing confidence is low.
