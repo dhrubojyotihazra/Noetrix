@@ -138,3 +138,121 @@ def test_llm_timeout_env_configurable(monkeypatch):
     monkeypatch.setenv("LLM_TIMEOUT", "45.0")
     assert get_llm_timeout() == 45.0
 
+
+class _FakeChoice:
+    def __init__(self, content):
+        self.message = type("Msg", (), {"content": content})()
+
+
+class _FakeResp:
+    def __init__(self, content):
+        self.choices = [_FakeChoice(content)]
+
+
+class _FakeCompletions:
+    def __init__(self, side_effects):
+        self.side_effects = list(side_effects)
+        self.calls = []
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        if not self.side_effects:
+            raise RuntimeError("No more side effects queued")
+        effect = self.side_effects.pop(0)
+        if isinstance(effect, Exception):
+            raise effect
+        return _FakeResp(effect)
+
+
+class _FakeGroq:
+    def __init__(self, completions):
+        self.chat = type("Chat", (), {"completions": completions})()
+
+
+def test_adapter_retry_on_invalid_json(monkeypatch):
+    """Adapter retries with repair prompt when output JSON validation fails."""
+    from app.genai import llm
+
+    monkeypatch.setenv("LLM_MODE", "on")
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test_key_12345")
+
+    with llm._CACHE_LOCK:
+        llm._CACHE.clear()
+
+    completions = _FakeCompletions([
+        "invalid non-json response text",
+        '{"message": "repaired_success", "code": 100}'
+    ])
+    fake_client = _FakeGroq(completions)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    res = llm.complete_json("system", "user", SampleModel, retries=1)
+    assert res.message == "repaired_success"
+    assert res.code == 100
+    assert len(completions.calls) == 2
+
+
+def test_adapter_429_backoff_and_retry(monkeypatch):
+    """Adapter backs off and retries upon HTTP 429 RateLimitError."""
+    import httpx
+    import time
+    from app.genai import llm
+    from groq import RateLimitError
+
+    monkeypatch.setenv("LLM_MODE", "on")
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test_key_12345")
+
+    with llm._CACHE_LOCK:
+        llm._CACHE.clear()
+
+    slept_durations = []
+    monkeypatch.setattr(time, "sleep", lambda s: slept_durations.append(s))
+
+    req = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    mock_response = httpx.Response(status_code=429, request=req)
+    rle = RateLimitError(message="rate limit reached", response=mock_response, body=None)
+
+    completions = _FakeCompletions([
+        rle,
+        '{"message": "rate_limited_recovered", "code": 200}'
+    ])
+    fake_client = _FakeGroq(completions)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    res = llm.complete_json("system", "user", SampleModel, retries=1)
+    assert res.message == "rate_limited_recovered"
+    assert res.code == 200
+    assert len(slept_durations) == 1
+    assert slept_durations[0] == 2.0
+
+
+def test_adapter_json_object_fallback_on_schema_error(monkeypatch):
+    """Adapter falls back to json_object response_format if json_schema is rejected by API."""
+    import httpx
+    from app.genai import llm
+    from groq import APIError
+
+    monkeypatch.setenv("LLM_MODE", "on")
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test_key_12345")
+
+    with llm._CACHE_LOCK:
+        llm._CACHE.clear()
+
+    req = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    api_err = APIError(message="response_format schema error", request=req, body=None)
+
+    completions = _FakeCompletions([
+        api_err,
+        '{"message": "schema_fallback_recovered", "code": 300}'
+    ])
+    fake_client = _FakeGroq(completions)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    res = llm.complete_json("system", "user", SampleModel, retries=0)
+    assert res.message == "schema_fallback_recovered"
+    assert res.code == 300
+    assert len(completions.calls) == 2
+    assert completions.calls[1]["response_format"] == {"type": "json_object"}
+
+
+

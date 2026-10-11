@@ -3,8 +3,10 @@
 import pytest
 from app.schemas.resume import ParsedResume, WorkEntry, EduEntry, ContactInfo
 from app.schemas.jd import JDFeatures
+from app.schemas.scoring import ScoringConfig, MetricScore
 from app.services.scorer.engine import score_resume_against_jd
 from app.services.improver import tailor_resume_to_jd
+
 
 
 @pytest.fixture
@@ -180,6 +182,119 @@ def test_explain_endpoint_returns_grounded_explanation(sample_data):
     assert "fixes" in data
     assert "generated_by" in data
     assert data["generated_by"] in ["rules", "llm"]
+
+
+def test_cap_fires_only_below_half_coverage():
+    """Must-have cap (50.0 points and 'weak' band) fires ONLY when fewer than half of must-haves match."""
+    jd = JDFeatures(
+        title="Senior Python Backend",
+        raw_text="Requires Python, FastAPI, Docker, and PostgreSQL with 5+ years experience.",
+        must_have_skills=["python", "fastapi", "docker", "postgresql"],  # 4 must-haves
+        min_experience_years=5.0,
+    )
+
+    def make_candidate(skills_in_bullets: list[str]) -> ParsedResume:
+        bullets = [
+            f"Engineered backends with {s} handling 50,000 requests per minute with 99.9% uptime."
+            for s in skills_in_bullets
+        ]
+        # Add quantified impact bullet
+        bullets.append("Optimized distributed caching layer reducing latency by 45%.")
+        return ParsedResume(
+            filename="candidate.pdf",
+            contact=ContactInfo(name="Candidate"),
+            summary="Senior Software Engineer with 8 years of backend engineering experience.",
+            skills=skills_in_bullets,
+            work_experience=[
+                WorkEntry(
+                    id="w1",
+                    title="Senior Software Engineer",
+                    company="TechCorp",
+                    dates="2016 - 2024",
+                    bullets=bullets,
+                )
+            ],
+            education=[
+                EduEntry(
+                    id="e1",
+                    institution="MIT",
+                    degree="Master of Science in Computer Science",
+                    dates="2012 - 2016",
+                )
+            ],
+            sections_detected=["summary", "skills", "experience", "education"],
+        )
+
+    # 1 of 4 (25% < 50%): CAP FIRES
+    cv_1 = make_candidate(["python"])
+    score_1 = score_resume_against_jd(cv_1, jd)
+    assert score_1.is_capped is True
+    assert score_1.match_band == "weak"
+    assert score_1.overall_score <= 50.0
+
+    # 2 of 4 (50% >= 50%): CAP DOES NOT FIRE
+    cv_2 = make_candidate(["python", "fastapi"])
+    score_2 = score_resume_against_jd(cv_2, jd)
+    assert score_2.is_capped is False
+    assert score_2.overall_score > 50.0
+
+    # 3 of 4 (75% >= 50%): CAP DOES NOT FIRE
+    cv_3 = make_candidate(["python", "fastapi", "docker"])
+    score_3 = score_resume_against_jd(cv_3, jd)
+    assert score_3.is_capped is False
+    assert score_3.overall_score > 50.0
+
+
+def test_band_edges_49_9_50_74_9_75(monkeypatch):
+    """Band thresholds must strictly evaluate:
+    >= 75.0 -> 'strong'
+    74.9 -> 'moderate'
+    50.0 -> 'moderate'
+    < 50.0 (e.g. 49.9) -> 'weak'
+    """
+    resume = ParsedResume(
+        filename="test.pdf",
+        contact=ContactInfo(name="Candidate"),
+        skills=["python"],
+        work_experience=[],
+    )
+    jd = JDFeatures(title="Role", must_have_skills=[])
+
+    from app.services.scorer import engine
+
+    test_cases = [
+        (75.0, "strong"),
+        (74.9, "moderate"),
+        (50.0, "moderate"),
+        (49.9, "weak"),
+    ]
+
+    for target_score, expected_band in test_cases:
+        monkeypatch.setattr(
+            engine,
+            "score_keywords",
+            lambda r, j, weight=1.0, ts=target_score: (
+                MetricScore(score=ts, weight=weight, weighted_score=ts * weight),
+                [],
+                []
+            ),
+        )
+        cfg = ScoringConfig(
+            weights={
+                "keyword_match": 1.0,
+                "semantic_fit": 0.0,
+                "experience": 0.0,
+                "education": 0.0,
+                "impact": 0.0,
+                "format": 0.0,
+            }
+        )
+        res = score_resume_against_jd(resume, jd, cfg)
+        assert res.overall_score == target_score
+        assert res.match_band == expected_band, (
+            f"Score {target_score} should be band '{expected_band}', got '{res.match_band}'"
+        )
+
 
 
 
