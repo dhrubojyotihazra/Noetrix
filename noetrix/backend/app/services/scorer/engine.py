@@ -50,8 +50,30 @@ def score_resume_against_jd(
     risk_flags: list[str] = []
 
     if jd.must_have_skills:
-        matched_must_haves = [s for s in jd.must_have_skills if any(m.lower() == s.lower() for m in matched_kws)]
-        missing_must_haves = [s for s in jd.must_have_skills if not any(m.lower() == s.lower() for m in matched_kws)]
+        # Require must-have skills to have contextual evidence outside the standalone skills list
+        # (e.g. in work experience bullets, projects, summary, or education) to mitigate keyword stuffing
+        outside_skills_text = " ".join([
+            resume.summary or "",
+            " ".join(b for w in (resume.work_experience or []) for b in (w.bullets or [])),
+            " ".join(b for p in (resume.projects or []) for b in (p.bullets or [])),
+            " ".join(" ".join(p.technologies or []) for p in (resume.projects or [])),
+            " ".join(b for e in (resume.education or []) for b in (e.bullets or [])),
+        ]).lower()
+
+        from app.nlp.tokenizer import word_boundary_match
+        from app.nlp.synonyms import get_synonyms
+
+        def has_outside_evidence(skill: str) -> bool:
+            return any(word_boundary_match(syn, outside_skills_text) for syn in get_synonyms(skill))
+
+        matched_must_haves = [
+            s for s in jd.must_have_skills
+            if any(m.lower() == s.lower() for m in matched_kws) and has_outside_evidence(s)
+        ]
+        missing_must_haves = [
+            s for s in jd.must_have_skills
+            if not (any(m.lower() == s.lower() for m in matched_kws) and has_outside_evidence(s))
+        ]
         coverage_ratio = len(matched_must_haves) / len(jd.must_have_skills) if jd.must_have_skills else 1.0
 
         # PRD rule: Soft knockout cap applies ONLY if candidate covers FEWER THAN HALF (< 50%) of must-have skills

@@ -110,3 +110,23 @@ def test_capped_cv_gets_weak_band():
     assert res.is_capped is True, "Candidate with 0/4 must-haves and high composite score must be capped"
     assert res.overall_score == 50.0, "Capped score must equal 50.0"
     assert res.match_band == "weak", f"Capped score must be classified as 'weak', got '{res.match_band}'"
+
+
+def test_keyword_stuffing_does_not_jump_sales_cv_to_moderate():
+    """A sales CV stuffed with all JD must-have skills in its skills list must not jump to moderate."""
+    from scripts.run_regression import build_canonical_sample_cvs
+    from app.services.jd_parser import parse_job_description
+    import copy
+
+    jd = parse_job_description(
+        "Role: ML Engineer\nMust Have: python, pytorch, scikit-learn, sql, docker, fastapi, pandas, numpy\n"
+    )
+    cvs = build_canonical_sample_cvs()
+    sales_cv = cvs[5]  # cv_06_non_technical
+    stuffed_cv = copy.deepcopy(sales_cv)
+    stuffed_cv.skills = ["python", "pytorch", "scikit-learn", "sql", "docker", "fastapi", "pandas", "numpy", "sales", "crm"]
+
+    res = score_resume_against_jd(stuffed_cv, jd)
+    assert res.match_band == "weak", f"Expected 'weak', got '{res.match_band}' with score {res.overall_score}"
+    assert res.overall_score <= 50.0, f"Expected score <= 50.0, got {res.overall_score}"
+

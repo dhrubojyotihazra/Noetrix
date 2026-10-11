@@ -61,21 +61,21 @@ def score_keywords(resume: ParsedResume, jd: JDFeatures, weight: float = 0.30) -
                 match_location = "experience bullets"
                 break
 
-        # Check in skills section
+        # Check in skills section (0.5x weight to mitigate ungrounded keyword stuffing)
         if not found:
             for syn in synonyms:
                 if word_boundary_match(syn, skills_text):
                     found = True
-                    placement_credit = 0.8
+                    placement_credit = 0.5
                     match_location = "skills section"
                     break
 
-        # Check in general text
+        # Check in general text (0.3x weight)
         if not found:
             for syn in synonyms:
                 if word_boundary_match(syn, general_text):
                     found = True
-                    placement_credit = 0.5
+                    placement_credit = 0.3
                     match_location = "general text"
                     break
 
