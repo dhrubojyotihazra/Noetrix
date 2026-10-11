@@ -4,10 +4,21 @@ import re
 from app.schemas.resume import ContactInfo
 
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
-PHONE_RE = re.compile(r"(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
+PHONE_RE = re.compile(
+    r"(?:\+\d{1,3}[-.\s]?)?"
+    r"(?:"
+    r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
+    r"|"
+    r"\d{5}[-.\s]?\d{5}"
+    r"|"
+    r"\d{3,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}"
+    r"|"
+    r"\d{10}"
+    r")"
+)
 LINKEDIN_RE = re.compile(r"linkedin\.com/in/[a-zA-Z0-9_-]+", re.IGNORECASE)
 GITHUB_RE = re.compile(r"github\.com/[a-zA-Z0-9_-]+", re.IGNORECASE)
-LOCATION_RE = re.compile(r"\b([A-Z][a-zA-Z\s]+,\s*[A-Z]{2}|[A-Z][a-zA-Z\s]+,\s*[A-Z][a-zA-Z\s]+)\b")
+LOCATION_RE = re.compile(r"\b([A-Z][a-zA-Z \t]+,[ \t]*[A-Z]{2}|[A-Z][a-zA-Z \t]+,[ \t]*[A-Z][a-zA-Z \t]+)\b")
 
 
 def extract_contact_info(text: str) -> ContactInfo:
