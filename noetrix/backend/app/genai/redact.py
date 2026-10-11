@@ -22,6 +22,25 @@ SENSITIVE_LINE_KEYWORDS = [
 ]
 
 
+def _is_plausible_phone(match: re.Match) -> str:
+    """Validate that matched candidate string has a plausible phone shape.
+    
+    Requires:
+    - At least 9 digits in total, OR
+    - A leading '+', OR
+    - A bracketed area code like (555).
+    Rejects year ranges like '2021-2023'.
+    """
+    s = match.group(0)
+    digits_count = sum(1 for c in s if c.isdigit())
+    has_plus = s.strip().startswith("+")
+    has_brackets = bool(re.search(r"\(\d{2,5}\)", s))
+
+    if digits_count >= 9 or has_plus or has_brackets:
+        return "[PHONE]"
+    return s
+
+
 def redact_pii(text: str, candidate_name: str = "") -> str:
     """Redact personal identifiable information from text.
     
@@ -59,9 +78,9 @@ def redact_pii(text: str, candidate_name: str = "") -> str:
         # Redact URLs second
         redacted = URL_REGEX.sub("[LINK]", redacted)
 
-        # Redact phones
+        # Redact phones (only plausible phone shapes, avoiding year ranges)
         if any(c.isdigit() for c in redacted):
-            redacted = PHONE_REGEX.sub("[PHONE]", redacted)
+            redacted = PHONE_REGEX.sub(_is_plausible_phone, redacted)
 
         # Redact candidate name tokens
         for token in name_tokens:
@@ -71,8 +90,9 @@ def redact_pii(text: str, candidate_name: str = "") -> str:
         cleaned_lines.append(redacted)
 
     result = "\n".join(cleaned_lines)
-    # Collapse multiple consecutive [NAME], [EMAIL], [PHONE] tags
-    result = re.sub(r"(\[NAME\]\s*)+", "[NAME] ", result)
-    result = re.sub(r"(\[EMAIL\]\s*)+", "[EMAIL] ", result)
-    result = re.sub(r"(\[PHONE\]\s*)+", "[PHONE] ", result)
+    # Collapse multiple consecutive tags on the same line without swallowing newlines
+    result = re.sub(r"(\[NAME\][ \t]*)+", "[NAME] ", result)
+    result = re.sub(r"(\[EMAIL\][ \t]*)+", "[EMAIL] ", result)
+    result = re.sub(r"(\[PHONE\][ \t]*)+", "[PHONE] ", result)
+    result = re.sub(r"(\[LINK\][ \t]*)+", "[LINK] ", result)
     return result.strip()

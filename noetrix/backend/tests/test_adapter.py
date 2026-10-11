@@ -69,3 +69,20 @@ def test_cache_key_generation_is_deterministic():
 
     assert k1 == k2
     assert k1 != k3
+
+
+def test_redact_preserves_year_ranges():
+    """Redaction must not convert year ranges like '2021-2023' into [PHONE]."""
+    text = "Machine Learning Engineer\n2021-2023\nBuilt deep learning models."
+    redacted = redact_pii(text)
+    assert "2021-2023" in redacted, f"Year range '2021-2023' must survive redaction, got: {redacted}"
+    assert "[PHONE]" not in redacted
+
+
+def test_redact_preserves_newlines_across_tags():
+    """Collapsing consecutive tags must not swallow newlines and merge lines."""
+    text = "John\nDoe\nSoftware Engineer"
+    redacted = redact_pii(text, candidate_name="John Doe")
+    assert "\n" in redacted
+    lines = [line.strip() for line in redacted.split("\n") if line.strip()]
+    assert len(lines) >= 2, f"Lines were collapsed across newlines: {redacted}"
