@@ -86,10 +86,28 @@ Our heartfelt thanks to our parents, family members, and friends for their const
 
 Finally, we express our gratitude to the global open-source software engineering community—particularly the contributors to FastAPI, Next.js, PyPDF, pdfplumber, Scikit-learn, Sentence-Transformers, ReportLab, and Groq SDK—whose robust tools formed the technological bedrock of the Noetrix platform."""
 
-ABSTRACT_TEXT = """Modern corporate hiring relies heavily on Applicant Tracking Systems (ATS) to process, filter, and rank hundreds of candidate resumes per job requisition. However, contemporary commercial ATS implementations suffer from severe structural vulnerabilities: proprietary black-box scoring algorithms, high vulnerability to adversarial keyword stuffing, institutional prestige bias, and uncalibrated Generative AI hallucination. Candidates face an opaque feedback vacuum with zero actionable visibility into rejection causes, while recruiters are inundated with noisy, unexplainable candidate rankings.
+ABSTRACT_PARAGRAPHS = [
+    (
+        "Problem Statement",
+        "Modern corporate hiring relies heavily on Applicant Tracking Systems (ATS) to process, filter, and rank hundreds of candidate resumes per job requisition. However, contemporary commercial ATS implementations suffer from severe structural vulnerabilities: proprietary black-box scoring algorithms, high vulnerability to adversarial keyword stuffing, institutional prestige bias, and uncalibrated Generative AI hallucination. Candidates face an opaque feedback vacuum with zero actionable visibility into rejection causes, while recruiters are inundated with noisy, unexplainable candidate rankings that fail to guarantee meritocratic alignment."
+    ),
+    (
+        "Objective of Project",
+        "The primary objective of Noetrix is to engineer an explainable, dual-portal resume screening and tailoring system that replaces black-box scoring with mathematically grounded evaluation, protects candidate privacy through client-side PII scrubbing and ephemeral stateless processing, and assists applicants through guardrailed generative AI suggestions that enforce zero fabrication of candidate credentials."
+    ),
+    (
+        "Method/Approach Used",
+        "The system decomposes candidate evaluation across six mathematically rigorous dimensions: Placement-Weighted Keyword Matching (0.30 weight), Dense Semantic Cosine Alignment via Sentence-Transformers MiniLM (0.20 weight), Experience Tenure and Action-Verb Density (0.20 weight), Prestige-Free Educational Attainment (0.10 weight), Quantified Impact Accomplishment Ratio (0.10 weight), and ATS Parse Format Hygiene (0.10 weight). To prevent gaming and keyword dumping, Noetrix enforces a mathematically proven 50-point Soft Knockout Ceiling whenever a candidate fails to demonstrate contextual proof for at least 50% of mandatory job requirements. Candidate bullet point tailoring operates via bounded LLM prompts constrained by a deterministic Zero-Fabrication Validator that cross-checks metrics and skill tokens."
+    ),
+    (
+        "Key Results",
+        "Comprehensive empirical evaluation over synthetic and real-world benchmark corpora confirms that the Noetrix deterministic engine achieves 100% mathematical reproducibility with zero score jitter across repeated evaluations and delivers an average scoring latency of 42.4 milliseconds per resume. The candidate bullet tailoring pipeline successfully eliminates passive openers while guaranteeing 0% hallucinated metric injections. Recruiter batch ranking executes with a deterministic 6-tier tie-breaking algorithm, ensuring completely auditable, merit-based candidate shortlisting."
+    ),
+    (
+        "Conclusion",
+        "Noetrix demonstrates that transparency, algorithmic fairness, and high-throughput automation can coexist within modern talent acquisition infrastructure. By providing explainable score breakdowns to recruiters and actionable, guardrailed optimization to applicants, the system establishes a trustworthy, ethical alternative to black-box commercial ATS platforms."
+    )
+]
 
-To resolve these systemic challenges, this report presents Noetrix: an explainable, dual-portal resume screening and tailoring system engineered with a hybrid deterministic scoring core and guardrailed Generative AI. The system decomposes candidate evaluation across six mathematically rigorous dimensions: Placement-Weighted Keyword Matching (0.30 weight), Dense Semantic Cosine Alignment via Sentence-Transformers MiniLM (0.20 weight), Experience Tenure and Action-Verb Density (0.20 weight), Prestige-Free Educational Attainment (0.10 weight), Quantified Impact Accomplishment Ratio (0.10 weight), and ATS Parse Format Hygiene (0.10 weight). To prevent gaming and keyword dumping, Noetrix enforces a mathematically proven 50-point Soft Knockout Ceiling whenever a candidate fails to demonstrate contextual proof for at least 50% of mandatory job requirements.
+ABSTRACT_TEXT = "\n\n".join([f"{title}: {text}" for title, text in ABSTRACT_PARAGRAPHS])
 
-In addition to deterministic screening, Noetrix features an interactive Candidate Portal equipped with an 'OpenResume' transparent parse inspector and a real-time bullet optimizer. Powered by a deterministic Zero-Fabrication Validator and bounded Large Language Models (LLMs via Groq), the system enhances weak passive bullet points into impactful Google XYZ accomplishments without inventing metrics or hallucinating phantom qualifications. All candidate data is protected via automated client-side PII scrubbing and a stateless in-memory session pipeline.
-
-Comprehensive empirical evaluation over synthetic and real-world benchmark corpora confirms that the Noetrix deterministic engine achieves 100% mathematical reproducibility with zero score jitter across repeated evaluations and delivers an average scoring latency of 42.4 milliseconds per resume. Recruiter batch ranking executes with a deterministic 6-tier tie-breaking algorithm, ensuring completely auditable, merit-based candidate shortlisting. Noetrix provides a transparent, fair, and trustworthy foundation for next-generation talent acquisition."""

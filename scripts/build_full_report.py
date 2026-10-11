@@ -26,8 +26,8 @@ from playwright.async_api import async_playwright
 # Import report data modules
 from report_data.front_matter import (
     PROJECT_METADATA, TEAM_MEMBERS, CERTIFICATE_TEXT,
-    INDUSTRY_CERTIFICATE_TEXT, DECLARATION_TEXT,
-    ACKNOWLEDGEMENT_TEXT, ABSTRACT_TEXT
+    DECLARATION_TEXT, ACKNOWLEDGEMENT_TEXT, ABSTRACT_TEXT,
+    ABSTRACT_PARAGRAPHS
 )
 from report_data.chapters_1_to_3 import CHAPTER_1_CONTENT, CHAPTER_2_CONTENT, CHAPTER_3_CONTENT
 from report_data.chapters_4_to_5 import CHAPTER_4_CONTENT, CHAPTER_5_CONTENT
@@ -109,9 +109,12 @@ print(f"Loaded {len(img_b64_map)} of {len(all_figures)} figures (diagrams & scre
 print(f"Discovered {len(all_tables)} structured data tables.")
 
 TOC_ITEMS = [
-    ("Front Matter (Certificate, Declaration, Acknowledgements, Abstract)", "i – vi"),
-    ("List of Figures", "vii"),
-    ("List of Tables", "viii"),
+    ("Certificate", "ii"),
+    ("Declaration of Originality", "iii"),
+    ("Acknowledgements", "iv"),
+    ("Abstract", "v"),
+    ("List of Figures", "vi"),
+    ("List of Tables", "vii"),
     ("Chapter 1: Introduction", "1"),
     ("  1.1 Background and Problem Landscape", "1"),
     ("  1.2 Evolution of Resume Screening Technologies", "3"),
@@ -125,30 +128,35 @@ TOC_ITEMS = [
     ("  2.2 Contemporary Neural Natural Language Processing in Recruitment", "12"),
     ("  2.3 In-Depth Analysis of Foundational Research Papers", "14"),
     ("  2.4 Comparative Analysis of State-of-the-Art Approaches", "17"),
-    ("  2.5 Research Gap Identification and Justification of Hybrid Paradigm", "19"),
+    ("  2.5 Research Gap Identification and Justification of the Hybrid Paradigm", "19"),
     ("Chapter 3: System Analysis", "21"),
     ("  3.1 Analysis of Contemporary Commercial ATS Platforms", "21"),
     ("  3.2 Deep Architectural Limitations of Existing Systems", "22"),
     ("  3.3 Proposed System Architecture: The Noetrix Solution", "24"),
     ("  3.4 Multidimensional Feasibility Study", "26"),
+    ("  3.5 Architectural Feasibility and Regulatory Compliance Matrix", "28"),
     ("Chapter 4: System Design", "29"),
     ("  4.1 High-Level Architectural Overview", "29"),
     ("  4.2 C4 Architectural Model", "31"),
     ("  4.3 Data Flow Modeling (DFD Levels 0, 1, and 2)", "33"),
-    ("  4.4 System Behavioral Modeling and Flowcharts", "35"),
-    ("  4.5 Subsystem Decomposition and Module Architecture", "37"),
-    ("  4.6 Ephemeral Stateless Session Architecture", "39"),
+    ("  4.3.2 DFD Level 1 (Functional Decomposition Modeling)", "34"),
+    ("  4.3.3 DFD Level 2 (GenAI Privacy & Zero-Fabrication Pipeline)", "35"),
+    ("  4.4 System Behavioral Modeling and Flowcharts", "36"),
+    ("  4.4.2 Recruiter Batch Screening and Audit Workflow Flowchart", "37"),
+    ("  4.5 Subsystem Decomposition and Module Architecture", "38"),
+    ("  4.6 Ephemeral Stateless Session Architecture and Zero-Retention Lifecycle", "39"),
     ("Chapter 5: Methodology and Mathematical Modeling", "41"),
     ("  5.1 End-to-End Hybrid Processing Pipeline", "41"),
     ("  5.2 Mathematical Formulation of the Six Scoring Dimensions", "42"),
     ("  5.3 Composite Scoring and the 50% Soft Knockout Ceiling", "48"),
     ("  5.4 Multi-Tier Deterministic Tie-Breaking Algorithm", "50"),
     ("  5.5 Guardrailed Generative AI and Zero-Fabrication Validator", "52"),
+    ("  5.6 Algorithmic Complexity, Latency Profiling, and Invariance Guarantees", "54"),
     ("Chapter 6: Implementation and Visual Showcase", "55"),
     ("  6.1 Hardware and Software Environment Specifications", "55"),
     ("  6.2 Exhaustive Technology Stack Breakdown", "56"),
     ("  6.3 Core Code Architecture and Module Walkthrough", "58"),
-    ("  6.4 Visual Implementation Showcase (Figures 6.1 – 6.15)", "60"),
+    ("  6.4 Visual Implementation Showcase (Complete Walkthrough of 15 Screenshots)", "60"),
     ("Chapter 7: Results and Discussion", "72"),
     ("  7.1 Experimental Evaluation Methodology and Benchmark Corpus", "72"),
     ("  7.2 Deterministic Consistency and Reproducibility Verification", "73"),
@@ -169,49 +177,72 @@ TOC_ITEMS = [
     ("  10.2 Audio and Video Interview Screening Integration", "89"),
     ("  10.3 Enterprise RBAC and HRIS Integration Ecosystem", "90"),
     ("  10.4 Continuous Autonomous Bias Auditing and Calibration", "91"),
-    ("References", "92"),
+    ("  10.5 Long-Term Research Vision and Standards Contribution", "92"),
+    ("References", "93"),
     ("Appendix A: Core Scoring Engine Source Code (engine.py)", "94"),
     ("Appendix B: Zero-Fabrication Validator Source Code (improver.py)", "97"),
     ("Appendix C: Central Pydantic Data Contracts (scoring.py)", "100"),
     ("Appendix D: Automated Test Suite Telemetry Logs", "102"),
-    ("Appendix E: Declarative Mermaid Architecture Specifications", "104")
+    ("Appendix E: Declarative Mermaid Architecture Specifications (Part 1)", "104"),
+    ("Appendix E: Declarative Mermaid Architecture Specifications (Part 2)", "105")
 ]
 
 def detect_all_page_numbers(doc):
     fig_map = {}
     tbl_map = {}
     
-    # 1. Detect Figures
+    # 1. Detect Front matter physical pages and Chapter 1 start
+    lof_p = None
+    lot_p = None
+    ch1_p = None
+    for p in range(len(doc)):
+        lines = [l.strip().upper() for l in doc[p].get_text().splitlines() if l.strip()]
+        top_lines = lines[:4] if len(lines) >= 4 else lines
+        if any(l == "LIST OF FIGURES" for l in top_lines) and not lof_p:
+            lof_p = p + 1
+        if any(l == "LIST OF TABLES" for l in top_lines) and not lot_p:
+            lot_p = p + 1
+        if any("CHAPTER 1: INTRODUCTION" in l for l in top_lines) and not ch1_p:
+            ch1_p = p + 1
+
+    # Content chapters strictly start on ch1_p. Figures and tables must only be detected in chapters.
+    first_content_p = (ch1_p - 1) if ch1_p else 10
+
+    # 2. Detect Figures (search only in chapters to avoid matching List of Figures)
     for fig in all_figures:
         fid = fig['id']
-        for p in range(10, len(doc)):
+        for p in range(first_content_p, len(doc)):
             txt = doc[p].get_text()
             if fid + ':' in txt or fid + ' :' in txt or fid.upper() + ':' in txt:
                 fig_map[fid] = str(p + 1)
                 break
                 
-    # 2. Detect Tables
+    # 3. Detect Tables (search only in chapters to avoid matching List of Tables)
     for tbl in all_tables:
         tid = tbl['id']
-        for p in range(10, len(doc)):
+        for p in range(first_content_p, len(doc)):
             txt = doc[p].get_text()
             if tid + ':' in txt or tid + ' :' in txt or tid.upper() + ':' in txt:
                 tbl_map[tid] = str(p + 1)
                 break
 
-    # 3. Detect TOC Items
+    # 4. Detect TOC Items
     toc_results = []
-    toc_results.append(('Front Matter (Certificate, Declaration, Acknowledgements, Abstract)', 'i – vi'))
-    toc_results.append(('List of Figures', 'vii'))
-    toc_results.append(('List of Tables', 'viii'))
+    toc_results.append(('Certificate', '2'))
+    toc_results.append(('Declaration of Originality', '3'))
+    toc_results.append(('Acknowledgements', '4'))
+    toc_results.append(('Abstract', '5'))
+    toc_results.append(('List of Figures', str(lof_p or 9)))
+    toc_results.append(('List of Tables', str(lot_p or 10)))
     
-    curr_ch_p = 10
-    for ch in ALL_CHAPTERS:
-        ch_title = re.sub(r'\s+', ' ', ch['title']).upper()
+    curr_ch_p = first_content_p
+    for idx, ch in enumerate(ALL_CHAPTERS, 1):
+        ch_prefix = f"CHAPTER {idx}:"
         ch_found = None
         for p in range(curr_ch_p, len(doc)):
-            norm = re.sub(r'\s+', ' ', doc[p].get_text()).upper()
-            if ch_title in norm:
+            top_lines = [re.sub(r'\s+', ' ', l).strip().upper() for l in doc[p].get_text().splitlines()[:5] if l.strip()]
+            top_text = " ".join(top_lines)
+            if ch_prefix in top_text:
                 ch_found = p + 1
                 curr_ch_p = p
                 break
@@ -224,32 +255,33 @@ def detect_all_page_numbers(doc):
         toc_results.append((ch_name, str(ch_found or curr_ch_p + 1)))
         
         for sec in ch['sections']:
-            sec_h = re.sub(r'\s+', ' ', sec['heading']).strip()
+            sec_h = re.sub(r'\s+', ' ', sec['heading']).strip().upper()
+            sec_num = sec_h.split()[0]
             sec_found = None
-            search_start = max(10, (ch_found or 11) - 1)
-            search_end = min(len(doc), search_start + 12)
+            search_start = max(first_content_p, (ch_found or first_content_p + 1) - 1)
+            search_end = min(len(doc), search_start + 18)
             for p in range(search_start, search_end):
-                norm = re.sub(r'\s+', ' ', doc[p].get_text())
-                if sec_h in norm:
+                txt = doc[p].get_text().upper()
+                if sec_h in txt or (sec_num in txt and sec_h[:20] in txt):
                     sec_found = p + 1
                     break
-            toc_results.append(('  ' + sec['heading'], str(sec_found or ch_found or 11)))
+            toc_results.append(('  ' + sec['heading'], str(sec_found or ch_found or first_content_p + 1)))
             
     ref_found = None
-    for p in range(50, len(doc)):
-        norm = re.sub(r'\s+', ' ', doc[p].get_text()).upper()
-        if 'REFERENCES' in norm:
+    for p in range(45, len(doc)):
+        lines = [l.strip().upper() for l in doc[p].get_text().splitlines()]
+        if any(l == "REFERENCES" for l in lines[:5]):
             ref_found = p + 1
             break
-    toc_results.append(('References', str(ref_found or 55)))
+    toc_results.append(('References', str(ref_found or 56)))
     
     for app_key, app_data in APPENDICES_CONTENT.items():
         title = app_data['title']
         prefix = title.split(':')[0].strip().upper()
         app_found = None
-        for p in range(54, len(doc)):
-            norm = re.sub(r'\s+', ' ', doc[p].get_text()).upper()
-            if prefix in norm:
+        for p in range(50, len(doc)):
+            lines = [l.strip().upper() for l in doc[p].get_text().splitlines()]
+            if any(prefix in l for l in lines[:5]):
                 app_found = p + 1
                 break
         
@@ -262,7 +294,17 @@ def detect_all_page_numbers(doc):
                      .replace("(Engine.Py)", "(engine.py)")
                      .replace("(Improver.Py)", "(improver.py)")
                      .replace("(Scoring.Py & Resume.Py)", "(scoring.py & resume.py)"))
-        toc_results.append((toc_title, str(app_found or 57)))
+        if app_key == "appendix_e":
+            toc_results.append((f"{toc_title} (Part 1)", str(app_found or 61)))
+            app_found_2 = None
+            for p in range((app_found or 61), len(doc)):
+                lines = [l.strip().upper() for l in doc[p].get_text().splitlines()]
+                if any("PART 2" in l for l in lines[:5]):
+                    app_found_2 = p + 1
+                    break
+            toc_results.append((f"{toc_title} (Part 2)", str(app_found_2 or 63)))
+        else:
+            toc_results.append((toc_title, str(app_found or 57)))
         
     return toc_results, fig_map, tbl_map
 
@@ -429,7 +471,7 @@ body {
 
 /* Chapter Headings */
 h1.chapter-title {
-  font-size: 15pt;
+  font-size: 16pt;
   font-weight: bold;
   text-align: center;
   text-transform: uppercase;
@@ -443,7 +485,7 @@ h1.chapter-title {
 }
 
 h2.section-heading {
-  font-size: 13pt;
+  font-size: 14pt;
   font-weight: bold;
   margin-top: 16px;
   margin-bottom: 8px;
@@ -584,10 +626,40 @@ p.appendix-desc {
   text-align: center;
 }
 
+.signature-grid-2col {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 130px;
+  font-size: 11pt;
+  text-align: center;
+}
+
 .signature-line {
   border-top: 1px solid #333;
-  width: 180px;
+  width: 220px;
   padding-top: 5px;
+}
+
+.candidate-sig-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 10.5pt;
+  line-height: 1.4;
+}
+
+.candidate-sig-table th {
+  background-color: #f1f5f9;
+  border: 1px solid #94a3b8;
+  padding: 6px 10px;
+  font-weight: bold;
+  color: #0b1c2d;
+  text-align: left;
+}
+
+.candidate-sig-table td {
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
 }
 
 .toc-item {
@@ -675,10 +747,10 @@ p.appendix-desc {
     # 2. Certificate
     html.append(f"""
 <div class="page-break"></div>
-<h1 class="chapter-title">CERTIFICATE OF RECOMMENDATION</h1>
+<h1 class="chapter-title">CERTIFICATE</h1>
 <p style="margin-top: 35px; line-height: 1.8;">{CERTIFICATE_TEXT}</p>
 
-<div class="signature-grid" style="margin-top: 120px;">
+<div class="signature-grid-2col" style="margin-top: 140px;">
   <div>
     <div class="signature-line"><strong>{PROJECT_METADATA["guide_name"]}</strong></div>
     Project Mentor & Engineer<br>Ardent Computech Pvt. Ltd.
@@ -687,84 +759,88 @@ p.appendix-desc {
     <div class="signature-line"><strong>{PROJECT_METADATA["hod_name"]}</strong></div>
     Head of Department, CSE (CS & DS)<br>Brainware University
   </div>
-  <div>
-    <div class="signature-line"><strong>{PROJECT_METADATA["dean_name"]}</strong></div>
-    Dean, School of Engineering<br>Brainware University
-  </div>
 </div>
 """)
 
-    # 3. Industry Certificate
-    html.append(f"""
-<div class="page-break"></div>
-<h1 class="chapter-title">INDUSTRIAL PROJECT CERTIFICATE</h1>
-<div style="text-align: center; margin: 25px 0;">
-  <img src="{ardent_b64}" style="height: 70px;" alt="Ardent Computech">
-  <div style="font-weight: bold; font-size: 13pt; margin-top: 5px;">{PROJECT_METADATA["industry_partner"]}</div>
-  <div style="font-size: 10.5pt; font-style: italic;">{PROJECT_METADATA["industry_tagline"]}</div>
-</div>
-<hr style="margin: 20px 0;">
-<p style="margin-top: 30px; line-height: 1.8;">{INDUSTRY_CERTIFICATE_TEXT}</p>
-
-<div class="signature-grid" style="margin-top: 120px;">
-  <div>
-    <div class="signature-line"><strong>Project Engineer</strong></div>
-    Ardent Computech Pvt. Ltd.
-  </div>
-  <div>
-    <div class="signature-line"><strong>Technical Director</strong></div>
-    Ardent Computech Pvt. Ltd.
-  </div>
-  <div>
-    <div class="signature-line"><strong>External Reviewer</strong></div>
-    Evaluation Committee
-  </div>
-</div>
-""")
-
-    # 4. Declaration
+    # 3. Declaration
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">DECLARATION OF ORIGINALITY</h1>
-<p style="margin-top: 35px; line-height: 1.8;">{DECLARATION_TEXT}</p>
+<p style="margin-top: 30px; line-height: 1.75;">{DECLARATION_TEXT}</p>
 
-<p style="margin-top: 50px; font-weight: bold;">Candidate Signatures:</p>
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 35px; margin-top: 40px; font-size: 11pt;">
-  <div>
-    <div class="signature-line" style="width: 220px;"><strong>Dhrubojyoti Hazra</strong></div>
-    Roll No: 23010333015 | Student Code: BWU/BTD/23/015
-  </div>
-  <div>
-    <div class="signature-line" style="width: 220px;"><strong>Isheeka Mukhopadhyay</strong></div>
-    Roll No: 23010333041 | Student Code: BWU/BTD/23/042
-  </div>
-  <div>
-    <div class="signature-line" style="width: 220px;"><strong>Samprikta De</strong></div>
-    Roll No: 23010333055 | Student Code: BWU/BTD/23/056
-  </div>
-  <div>
-    <div class="signature-line" style="width: 220px;"><strong>Adhiraj Das</strong></div>
-    Roll No: 23010333009 | Student Code: BWU/BTD/23/009
-  </div>
-  <div>
-    <div class="signature-line" style="width: 220px;"><strong>Tiyasha Baidya</strong></div>
-    Roll No: 23010333025 | Student Code: BWU/BTD/23/025
-  </div>
-</div>
+<p style="margin-top: 25px; font-weight: bold; font-size: 11.5pt;">Candidate Signatures:</p>
+<table class="candidate-sig-table">
+  <thead>
+    <tr>
+      <th style="width: 10%; text-align: center;">Sl. No.</th>
+      <th style="width: 32%;">Candidate Name</th>
+      <th style="width: 24%;">Roll Number</th>
+      <th style="width: 22%;">Student Code</th>
+      <th style="width: 12%;">Signature</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td><strong>Dhrubojyoti Hazra</strong></td>
+      <td>23010333015</td>
+      <td>BWU/BTD/23/015</td>
+      <td style="height: 34px;"></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">2</td>
+      <td><strong>Isheeka Mukhopadhyay</strong></td>
+      <td>23010333041</td>
+      <td>BWU/BTD/23/042</td>
+      <td style="height: 34px;"></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">3</td>
+      <td><strong>Samprikta De</strong></td>
+      <td>23010333055</td>
+      <td>BWU/BTD/23/056</td>
+      <td style="height: 34px;"></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">4</td>
+      <td><strong>Adhiraj Das</strong></td>
+      <td>23010333009</td>
+      <td>BWU/BTD/23/009</td>
+      <td style="height: 34px;"></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">5</td>
+      <td><strong>Tiyasha Baidya</strong></td>
+      <td>23010333025</td>
+      <td>BWU/BTD/23/025</td>
+      <td style="height: 34px;"></td>
+    </tr>
+  </tbody>
+</table>
 """)
 
-    # 5. Acknowledgement
+    # 4. Acknowledgement
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">ACKNOWLEDGEMENTS</h1>
-<p style="margin-top: 30px; line-height: 1.75;">{ACKNOWLEDGEMENT_TEXT}</p>
+<p style="margin-top: 25px; line-height: 1.75;">{ACKNOWLEDGEMENT_TEXT}</p>
 """)
 
-    # 6. Abstract
+    # 5. Abstract
+    abstract_paras_html = []
+    for heading, p_text in ABSTRACT_PARAGRAPHS:
+        abstract_paras_html.append(f"""
+<p style="margin-top: 14px; line-height: 1.6;">
+  <strong style="color: #0b1c2d;">{heading}:</strong> {p_text}
+</p>
+""")
+    abstract_body = "".join(abstract_paras_html)
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">ABSTRACT</h1>
-<p style="margin-top: 30px; line-height: 1.75;">{ABSTRACT_TEXT}</p>
+<div style="margin-top: 15px;">
+  {abstract_body}
+</div>
 """)
 
     # 7. Table of Contents
@@ -989,7 +1065,7 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
     for sec in doc.sections:
         sec.top_margin    = Inches(1.0)
         sec.bottom_margin = Inches(1.0)
-        sec.left_margin   = Inches(1.25)
+        sec.left_margin   = Inches(1.0)
         sec.right_margin  = Inches(1.0)
 
         # Header — running title
@@ -1114,7 +1190,7 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
         add_para_bottom_border(p, "C8A02A", size=8)
         run = p.add_run(f"  {title}  ")
         run.font.name = 'Times New Roman'
-        run.font.size = Pt(15)
+        run.font.size = Pt(16)
         run.bold = True
         run.font.color.rgb = WHITE
         # Spacer after
@@ -1140,7 +1216,7 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
         pPr.append(pBdr)
         run = p.add_run(f"  {text}")
         run.font.name = 'Times New Roman'
-        run.font.size = Pt(13.5)
+        run.font.size = Pt(14)
         run.bold = True
         run.font.color.rgb = DARK_BLUE
 
@@ -1300,53 +1376,89 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
     # ════════════════════════════════════════════════════════════════════════
     # 2. CERTIFICATE
     # ════════════════════════════════════════════════════════════════════════
-    add_chapter_title("CERTIFICATE OF RECOMMENDATION")
+    add_chapter_title("CERTIFICATE")
     add_p(CERTIFICATE_TEXT, space_after=30)
     add_divider()
     sig_text = (
         f"\n{PROJECT_METADATA['guide_name']}\n"
         f"Project Engineer & Industry Mentor\nArdent Computech Pvt. Ltd.\n(In Association with Brainware University)\n\n"
         f"Countersigned by:\n\n"
-        f"{PROJECT_METADATA['hod_name']}\nHead of the Department, Department of CSE (CS & DS)\nBrainware University\n\n"
-        f"{PROJECT_METADATA['dean_name']}\nDean, School of Engineering\nBrainware University"
+        f"{PROJECT_METADATA['hod_name']}\nHead of the Department, Department of CSE (CS & DS)\nBrainware University"
     )
     add_p(sig_text, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, space_after=0)
 
     # ════════════════════════════════════════════════════════════════════════
-    # 3. INDUSTRY CERTIFICATE
-    # ════════════════════════════════════════════════════════════════════════
-    add_chapter_title("INDUSTRIAL PROJECT CERTIFICATE")
-    add_p(f"{PROJECT_METADATA['industry_partner']}\n{PROJECT_METADATA['industry_tagline']}",
-          bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=16)
-    add_p(INDUSTRY_CERTIFICATE_TEXT, space_after=30)
-    add_divider()
-    add_p("\n\nProject Engineer & Technical Director\nArdent Computech Pvt. Ltd., Kolkata",
-          bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT)
-
-    # ════════════════════════════════════════════════════════════════════════
-    # 4. DECLARATION
+    # 3. DECLARATION
     # ════════════════════════════════════════════════════════════════════════
     add_chapter_title("DECLARATION OF ORIGINALITY")
-    add_p(DECLARATION_TEXT, space_after=20)
-    add_divider()
-    add_p(
-        "Candidate Signatures:\n"
-        "1. Dhrubojyoti Hazra (Roll No: 23010333015, Student Code: BWU/BTD/23/015)\n"
-        "2. Isheeka Mukhopadhyay (Roll No: 23010333041, Student Code: BWU/BTD/23/042)\n"
-        "3. Samprikta De (Roll No: 23010333055, Student Code: BWU/BTD/23/056)\n"
-        "4. Adhiraj Das (Roll No: 23010333009, Student Code: BWU/BTD/23/009)\n"
-        "5. Tiyasha Baidya (Roll No: 23010333025, Student Code: BWU/BTD/23/025)",
-        bold=True, space_after=10
-    )
+    add_p(DECLARATION_TEXT, space_after=16)
+    add_p("Candidate Signatures:", bold=True, space_after=6)
+    
+    cand_t = doc.add_table(rows=6, cols=5)
+    cand_t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cand_headers = ["Sl. No.", "Candidate Name", "Roll Number", "Student Code", "Signature"]
+    hdr_cells = cand_t.rows[0].cells
+    for i, h_text in enumerate(cand_headers):
+        hdr_cells[i].text = h_text
+        shade_cell(hdr_cells[i], RGBColor(0x0b, 0x1c, 0x2d))
+        for p in hdr_cells[i].paragraphs:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER if i == 0 or i == 4 else WD_ALIGN_PARAGRAPH.LEFT
+            for r in p.runs:
+                r.font.name = "Times New Roman"
+                r.font.size = Pt(9.5)
+                r.font.bold = True
+                r.font.color.rgb = RGBColor(0xff, 0xff, 0xff)
+    
+    cand_data = [
+        ("1", "Dhrubojyoti Hazra", "23010333015", "BWU/BTD/23/015"),
+        ("2", "Isheeka Mukhopadhyay", "23010333041", "BWU/BTD/23/042"),
+        ("3", "Samprikta De", "23010333055", "BWU/BTD/23/056"),
+        ("4", "Adhiraj Das", "23010333009", "BWU/BTD/23/009"),
+        ("5", "Tiyasha Baidya", "23010333025", "BWU/BTD/23/025")
+    ]
+    for row_idx, data in enumerate(cand_data, start=1):
+        row_cells = cand_t.rows[row_idx].cells
+        for col_idx in range(4):
+            row_cells[col_idx].text = data[col_idx]
+        row_cells[4].text = ""
+        bg_col = RGBColor(0xf8, 0xfa, 0xfc) if row_idx % 2 == 1 else RGBColor(0xff, 0xff, 0xff)
+        for col_idx in range(5):
+            shade_cell(row_cells[col_idx], bg_col)
+            for p in row_cells[col_idx].paragraphs:
+                p.paragraph_format.space_before = Pt(3)
+                p.paragraph_format.space_after = Pt(3)
+                if col_idx == 0:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for r in p.runs:
+                    r.font.name = "Times New Roman"
+                    r.font.size = Pt(9.5)
+                    if col_idx == 1:
+                        r.font.bold = True
 
     # ════════════════════════════════════════════════════════════════════════
-    # 5. ACKNOWLEDGEMENTS & ABSTRACT
+    # 4. ACKNOWLEDGEMENTS
     # ════════════════════════════════════════════════════════════════════════
     add_chapter_title("ACKNOWLEDGEMENTS")
     add_p(ACKNOWLEDGEMENT_TEXT)
 
+    # ════════════════════════════════════════════════════════════════════════
+    # 5. ABSTRACT
+    # ════════════════════════════════════════════════════════════════════════
     add_chapter_title("ABSTRACT")
-    add_p(ABSTRACT_TEXT)
+    for heading, p_text in ABSTRACT_PARAGRAPHS:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt(4)
+        p.paragraph_format.space_after = Pt(8)
+        p.paragraph_format.line_spacing = 1.3
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        r_head = p.add_run(f"{heading}: ")
+        r_head.font.name = "Times New Roman"
+        r_head.font.size = Pt(11)
+        r_head.font.bold = True
+        r_head.font.color.rgb = DARK_BLUE
+        r_body = p.add_run(p_text)
+        r_body.font.name = "Times New Roman"
+        r_body.font.size = Pt(11)
 
     # ════════════════════════════════════════════════════════════════════════
     # 6. TABLE OF CONTENTS
@@ -1579,7 +1691,7 @@ async def compile_pdf(html_path):
 
 async def main():
     print("\n" + "="*70)
-    print("NOETRIX MASTER PROJECT REPORT COMPILER — TWO-PASS OPTIMIZATION")
+    print("NOETRIX MASTER PROJECT REPORT COMPILER — CONVERGENT MULTI-PASS OPTIMIZATION")
     print("="*70)
     
     # PASS 1: Build baseline documents with complete content
@@ -1596,11 +1708,32 @@ async def main():
     
     print(f"Extracted {len(toc_items)} TOC items, {len(fig_map)} figures, {len(tbl_map)} tables.")
     
-    # Re-render HTML, PDF, and DOCX with exact synchronized page numbers
-    print("\n[PASS 2] Re-compiling final synchronized HTML, PDF, and Word documents...")
+    # Re-render HTML and PDF with Pass 1 detected page numbers
+    print("\n[PASS 2] Re-compiling PDF with extracted page numbers...")
     html_path = build_html_report(toc_items=toc_items, fig_map=fig_map, tbl_map=tbl_map)
-    pdf_path, final_pages = await compile_pdf(html_path)
-    docx_path = build_docx_report(toc_items=toc_items, fig_map=fig_map, tbl_map=tbl_map)
+    pdf_path, pass2_pages = await compile_pdf(html_path)
+    
+    # Scan Pass 2 PDF to check if page numbers converged or shifted
+    pdf_doc2 = pymupdf.open(pdf_path)
+    toc_items2, fig_map2, tbl_map2 = detect_all_page_numbers(pdf_doc2)
+    pdf_doc2.close()
+    
+    if toc_items != toc_items2 or fig_map != fig_map2 or tbl_map != tbl_map2:
+        print("\n[PASS 3] Page numbers reflowed. Running final convergence pass to guarantee 100% exact index alignment...")
+        html_path = build_html_report(toc_items=toc_items2, fig_map=fig_map2, tbl_map=tbl_map2)
+        pdf_path, final_pages = await compile_pdf(html_path)
+        final_toc = toc_items2
+        final_figs = fig_map2
+        final_tbls = tbl_map2
+    else:
+        print("\nPage numbers completely converged in Pass 2!")
+        final_pages = pass2_pages
+        final_toc = toc_items
+        final_figs = fig_map
+        final_tbls = tbl_map
+    
+    print("\nGenerating final synchronized Word Document (.docx)...")
+    docx_path = build_docx_report(toc_items=final_toc, fig_map=final_figs, tbl_map=final_tbls)
     
     print("\n" + "="*70)
     print("NOETRIX MASTER PROJECT REPORT GENERATION COMPLETE & FULLY SYNCHRONIZED!")
