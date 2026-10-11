@@ -6,6 +6,7 @@ from app.schemas.resume import ParsedResume
 from app.schemas.jd import JDFeatures
 from app.schemas.scoring import ScoringConfig, RankedCandidate, ScoreResult
 from app.services.scorer.engine import score_resume_against_jd
+from app.services.scorer.experience_scorer import estimate_years_of_experience
 
 
 def rank_resumes_batch(
@@ -62,7 +63,7 @@ def rank_resumes_batch(
             overall_score=score_res.overall_score,
             match_band=score_res.match_band,
             must_have_coverage=cov,
-            years_experience=round(float(len(res.work_experience) * 2.0), 1),
+            years_experience=estimate_years_of_experience(res),
             status="active",
             risk_flags=score_res.risk_flags,
             metrics=score_res.metrics,
@@ -72,8 +73,24 @@ def rank_resumes_batch(
     return ranked_results
 
 
+def sanitize_csv_cell(val) -> str:
+    """Neutralise CSV injection by prefixing formula triggers (=, +, -, @) with a single quote."""
+    s = str(val) if val is not None else ""
+    if s and s[0] in ("=", "+", "-", "@"):
+        return "'" + s
+    return s
+
+
+def _metric_score_val(metric_obj) -> float:
+    if hasattr(metric_obj, "score"):
+        return float(metric_obj.score)
+    if isinstance(metric_obj, dict):
+        return float(metric_obj.get("score", 0.0))
+    return 0.0
+
+
 def generate_candidates_csv(ranked: list[RankedCandidate]) -> str:
-    """Generate RFC 4180 CSV export of ranked candidates."""
+    """Generate RFC 4180 CSV export of ranked candidates with formula injection neutralization."""
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
@@ -83,18 +100,19 @@ def generate_candidates_csv(ranked: list[RankedCandidate]) -> str:
     ])
 
     for c in ranked:
-        writer.writerow([
+        row = [
             c.rank,
             c.candidate_name,
             c.filename,
             f"{c.overall_score:.1f}",
             c.match_band.capitalize(),
             f"{c.must_have_coverage:.1f}%",
-            f"{c.metrics.get('keyword_match', {}).score:.1f}",
-            f"{c.metrics.get('experience', {}).score:.1f}",
-            f"{c.metrics.get('impact', {}).score:.1f}",
+            f"{_metric_score_val(c.metrics.get('keyword_match')):.1f}",
+            f"{_metric_score_val(c.metrics.get('experience')):.1f}",
+            f"{_metric_score_val(c.metrics.get('impact')):.1f}",
             c.status.capitalize(),
             "; ".join(c.risk_flags) if c.risk_flags else "None"
-        ])
+        ]
+        writer.writerow([sanitize_csv_cell(cell) for cell in row])
 
     return output.getvalue()
