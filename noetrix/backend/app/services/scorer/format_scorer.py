@@ -48,7 +48,7 @@ def score_format_health(resume: ParsedResume, weight: float = 0.10) -> MetricSco
     word_count = len(resume.raw_text.split())
     if word_count < 150:
         score_val -= 20.0
-        deductions.append(f"Resume text is unusually short ({word_count} words; minimum recommended is 200 words) (-20 pts).")
+        deductions.append(f"Resume text is unusually short ({word_count} words; minimum recommended is 150 words) (-20 pts).")
     elif word_count > 1500:
         score_val -= 10.0
         deductions.append(f"Resume is excessively long ({word_count} words; standard limit is under 1,000 words) (-10 pts).")

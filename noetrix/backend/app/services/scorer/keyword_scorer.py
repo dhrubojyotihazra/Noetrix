@@ -36,8 +36,9 @@ def score_keywords(resume: ParsedResume, jd: JDFeatures, weight: float = 0.30) -
         b for w in resume.work_experience for b in w.bullets
     ).lower()
 
-    # 2. Skills section (0.8x weight)
+    # 2. Skills section (0.5x weight to mitigate ungrounded keyword stuffing)
     skills_text = " ".join(resume.skills).lower()
+
 
     # 3. General raw text (0.5x weight)
     general_text = resume.raw_text.lower()

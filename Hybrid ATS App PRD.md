@@ -242,21 +242,21 @@ Priority: P0 = MVP, P1 = soon after, P2 = later.
 
 ## 9. Data model (core entities)
 
-- **User:** id, role (candidate or recruiter), email.
-- **Resume:** owner, file, raw text, parsed JSON (sections, skills, experience, education), parse confidence.
-- **JobDescription:** owner, raw text, extracted criteria (must-haves, nice-to-haves, minimum experience, domain), weights.
+- **Session / Scope:** Stateless processing; data lives only in browser tab memory / sessionStorage with zero persistent user accounts or database records.
+- **Resume:** file, raw text, parsed JSON (sections, skills, experience, education), parse confidence.
+- **JobDescription:** raw text, extracted criteria (must-haves, nice-to-haves, minimum experience, domain), weights.
 - **Analysis (candidate):** resume, JD, per-metric scores, evidence JSON, engine version, timestamp.
 - **RankedCandidate (recruiter):** job, resume, total score, per-metric scores, flags, status.
 - **ScoringConfig:** weights, thresholds, bands, versioned so old scores stay reproducible.
 
 ## 10. Proposed architecture and stack
 
-- **Backend:** FastAPI with Pydantic schemas; SQLite for MVP, Postgres later.
-- **Parsing:** pdfplumber and python-docx, with PyMuPDF as a fallback.
-- **NLP:** scikit-learn TF-IDF, sentence-transformers (all-MiniLM-L6-v2), skills\_taxonomy.json.
-- **LLM (optional):** schema-constrained extraction only, through a provider adapter that supports local Ollama.
-- **Frontend:** Next.js and Tailwind (the Resume-Matcher pattern). Streamlit is a faster fallback for the first prototype.
-- **Deploy:** Docker.
+- **Backend:** FastAPI with Pydantic schemas; stateless in-memory execution (no server-side database).
+- **Parsing:** pdfplumber and python-docx.
+- **NLP:** scikit-learn TF-IDF, sentence-transformers (all-MiniLM-L6-v2), skills_taxonomy.json.
+- **LLM (optional):** schema-constrained extraction only, through Groq API or local Ollama.
+- **Frontend:** Next.js 15 (React 19) and Tailwind CSS.
+- **Deploy:** Vercel (Frontend) & Render (Backend).
 
 ## 11. Non-functional requirements and success metrics
 
@@ -291,10 +291,10 @@ Priority: P0 = MVP, P1 = soon after, P2 = later.
 | LLM output varies between runs | LLM only extracts into a fixed schema; scoring is deterministic |
 | Keyword stuffing | Per-keyword cap, repeated-text and hidden-text detection |
 
-## 14. Open questions
+## 14. Architecture decisions resolved
 
-- MVP frontend: Next.js or Streamlit?
-- Local-first (no accounts) or hosted with accounts?
-- Primary segment: campus placement cells or small-company HR?
-- Is the apply link needed for the first demo?
-- Product name?
+- Frontend: Built with Next.js 15 (React 19) and Tailwind CSS.
+- Storage: 100% ephemeral and local-first (no accounts, no persistent server-side database).
+- Primary segment: campus placement cells and small-company HR.
+- Product name: Noetrix.
+

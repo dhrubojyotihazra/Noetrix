@@ -20,10 +20,11 @@ Evaluated using a standardized technical candidate profile (*Eva Stone, Machine 
 
 | Template Name | Layout Style | Columns Detected | Required Sections Found | Parse Confidence | Bullets Recovered | ATS-Safe Badge |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Classic Academic** (`classic`) | Standard ATS, serif/sans mix, horizontal rules | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **5 / 5 (100%)** | **PASS (Passes our parser test)** |
-| **Modern Minimal** (`modern`) | Clean blue accent rules, structured headers | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **5 / 5 (100%)** | **PASS (Passes our parser test)** |
-| **Technical Compact** (`compact`) | High-density engineering layout, minimal whitespace | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **5 / 5 (100%)** | **PASS (Passes our parser test)** |
-| **Executive** (`executive`) | Elevated title banner, prominent typography | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **5 / 5 (100%)** | **PASS (Passes our parser test)** |
+| **Classic Academic** (`classic`) | Standard ATS, serif/sans mix, horizontal rules | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **2 / 2 (100%)** | **PASS (Passes our parser test)** |
+| **Modern Minimal** (`modern`) | Clean blue accent rules, structured headers | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **2 / 2 (100%)** | **PASS (Passes our parser test)** |
+| **Technical Compact** (`compact`) | High-density engineering layout, minimal whitespace | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **2 / 2 (100%)** | **PASS (Passes our parser test)** |
+| **Executive** (`executive`) | Elevated title banner, prominent typography | **1** | **6 / 6** (Summary, Experience, Education, Skills, Projects, Certs) | **1.00** | **2 / 2 (100%)** | **PASS (Passes our parser test)** |
+
 
 ---
 
