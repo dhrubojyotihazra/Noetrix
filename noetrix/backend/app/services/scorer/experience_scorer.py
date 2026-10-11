@@ -1,6 +1,6 @@
-"""Experience scoring: tenure alignment, role relevance, and action verbs."""
-
+import os
 import re
+from datetime import date
 from app.schemas.scoring import MetricScore
 from app.schemas.resume import ParsedResume
 from app.schemas.jd import JDFeatures
@@ -14,12 +14,32 @@ MONTH_MAP = {
     "nov": 11, "november": 11, "dec": 12, "december": 12
 }
 
-CURRENT_YEAR = 2026
-CURRENT_MONTH = 10
+
+def get_reference_date(ref_date: date | None = None) -> tuple[int, int]:
+    """Return (year, month) using explicit parameter, env override, or date.today()."""
+    if ref_date:
+        return ref_date.year, ref_date.month
+    env_date = os.environ.get("NOETRIX_CURRENT_DATE")
+    if env_date:
+        try:
+            d = date.fromisoformat(env_date)
+            return d.year, d.month
+        except Exception:
+            pass
+    env_year = os.environ.get("NOETRIX_CURRENT_YEAR")
+    env_month = os.environ.get("NOETRIX_CURRENT_MONTH")
+    if env_year:
+        try:
+            return int(env_year), int(env_month) if env_month else 1
+        except Exception:
+            pass
+    today = date.today()
+    return today.year, today.month
 
 
-def estimate_years_of_experience(resume: ParsedResume) -> float:
+def estimate_years_of_experience(resume: ParsedResume, reference_date: date | None = None) -> float:
     """Estimate total years of experience by scanning dates strictly in work entries."""
+    curr_year, curr_month = get_reference_date(reference_date)
     total_months = 0
 
     # Search for date spans within each work entry
@@ -41,14 +61,14 @@ def estimate_years_of_experience(resume: ParsedResume) -> float:
                 start_m = MONTH_MAP.get(start_m_str.strip().lower().replace(".", ""), 1) if start_m_str else 1
 
                 if end_y_str.lower() in ["present", "current"]:
-                    end_y = CURRENT_YEAR
-                    end_m = CURRENT_MONTH
+                    end_y = curr_year
+                    end_m = curr_month
                 else:
                     end_y = int(end_y_str)
                     end_m = MONTH_MAP.get(end_m_str.strip().lower().replace(".", ""), 12) if end_m_str else 12
 
                 diff_months = (end_y - start_y) * 12 + (end_m - start_m) + 1
-                if 1 <= diff_months <= 120:
+                if 1 <= diff_months <= 480:
                     total_months += diff_months
             except Exception:
                 continue
@@ -63,9 +83,14 @@ def estimate_years_of_experience(resume: ParsedResume) -> float:
     return 0.5
 
 
-def score_experience(resume: ParsedResume, jd: JDFeatures, weight: float = 0.20) -> tuple[MetricScore, float]:
+def score_experience(
+    resume: ParsedResume,
+    jd: JDFeatures,
+    weight: float = 0.20,
+    reference_date: date | None = None
+) -> tuple[MetricScore, float]:
     """Score candidate experience against JD required tenure and quality signals."""
-    est_years = estimate_years_of_experience(resume)
+    est_years = estimate_years_of_experience(resume, reference_date=reference_date)
     req_years = jd.min_experience_years
 
     # Tenure score

@@ -130,3 +130,31 @@ def test_keyword_stuffing_does_not_jump_sales_cv_to_moderate():
     assert res.match_band == "weak", f"Expected 'weak', got '{res.match_band}' with score {res.overall_score}"
     assert res.overall_score <= 50.0, f"Expected score <= 50.0, got {res.overall_score}"
 
+
+def test_estimate_years_of_experience_respects_reference_date_and_env(monkeypatch):
+    """estimate_years_of_experience must use reference_date or env override instead of hardcoded 2026."""
+    from datetime import date
+    from app.services.scorer.experience_scorer import estimate_years_of_experience
+
+    resume = ParsedResume(
+        work_experience=[
+            WorkEntry(
+                id="w1",
+                title="Software Engineer",
+                company="Acme Corp",
+                dates="Jan 2020 - Present",
+                bullets=["Built distributed services"]
+            )
+        ]
+    )
+
+    # With reference_date in 2030 (10.1 years experience: Jan 2020 to Jan 2030 = 121 mos)
+    tenure_2030 = estimate_years_of_experience(resume, reference_date=date(2030, 1, 1))
+    assert tenure_2030 == 10.1, f"Expected 10.1 years in 2030, got {tenure_2030}"
+
+    # With env override
+    monkeypatch.setenv("NOETRIX_CURRENT_DATE", "2028-01-01")
+    tenure_2028 = estimate_years_of_experience(resume)
+    assert tenure_2028 == 8.1, f"Expected 8.1 years in 2028, got {tenure_2028}"
+
+
