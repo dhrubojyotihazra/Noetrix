@@ -306,23 +306,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 2px solid #cbd5e1;
       border-radius: 12px;
       padding: 24px 28px;
-      width: 1050px;
+      width: 1180px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
     }}
     .diagram-title {{
-      font-size: 18px;
+      font-size: 21px;
       font-weight: 700;
       color: #0f172a;
       text-align: center;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }}
     .diagram-subtitle {{
-      font-size: 13px;
+      font-size: 14.5px;
       color: #64748b;
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }}
     .mermaid {{
       display: flex;
@@ -330,7 +330,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       align-items: center;
     }}
     .mermaid svg {{
-      max-width: 1000px !important;
+      max-width: 1140px !important;
       height: auto !important;
     }}
   </style>
@@ -340,7 +340,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       theme: 'neutral',
       themeVariables: {{
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
-        fontSize: '13px',
+        fontSize: '17px',
         primaryColor: '#f0f9ff',
         primaryTextColor: '#0369a1',
         primaryBorderColor: '#0284c7',
@@ -373,7 +373,7 @@ async def render_all_mermaid_diagrams():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         # 3x device scale = crisp print-quality (300 dpi equivalent)
-        page = await browser.new_page(viewport={"width": 1400, "height": 1200}, device_scale_factor=3)
+        page = await browser.new_page(viewport={"width": 1600, "height": 1300}, device_scale_factor=3)
         
         for name, data in MERMAID_DIAGRAMS.items():
             out_png = os.path.join(DIAGRAMS_DIR, f"{name}.png")

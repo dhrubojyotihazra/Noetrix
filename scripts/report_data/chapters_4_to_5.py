@@ -10,9 +10,7 @@ CHAPTER_4_CONTENT = {
             "heading": "4.1 High-Level Architectural Overview",
             "paragraphs": [
                 "The Noetrix platform is engineered around a modern, decoupled, three-tier architectural paradigm designed for high throughput, sub-second reactivity, and total explainability. The system cleanly segregates the Presentation Layer, the Core API & Service Layer, and the Stateless Analytics & Generative AI Layer.",
-                "Presentation Layer (Frontend): Implemented in Next.js 14 utilizing React Server Components, TypeScript, and Tailwind CSS. The frontend is organized into two primary user journeys: the 'Candidate Portal' (providing interactive resume uploading, live scoring radar displays, transparent parse inspection, and real-time bullet tailoring) and the 'Recruiter Portal' (providing job requisition configuration, batch file ingestion, dynamic ranking leaderboards, and candidate dossier audit drawers).",
-                "Service Layer (Backend API): Implemented as a high-performance asynchronous REST API in FastAPI (Python 3.11+). The backend handles multi-part document ingestion, text sanitization, section classification, deterministic 6-metric scoring orchestration, batch candidate tie-breaking, and ATS-compliant ReportLab PDF generation.",
-                "Analytics & Generative AI Layer: Orchestrates dense semantic vector embeddings via local Sentence-Transformers (all-MiniLM-L6-v2) alongside bounded, guardrailed LLM inference powered by Groq (LLaMA 3.3 70B Versatile). This layer operates under strict constraints: temperature 0.0, 15-second request timeouts, in-memory SHA-256 caching, process-wide concurrency semaphores, and strict Pydantic JSON schema validation."
+                "The architecture coordinates user interactions via Next.js 14, synchronous REST orchestration via FastAPI, and bounded AI inference via Groq LLaMA 3.3 70B and Sentence-Transformers, as mapped out in Figure 4.1."
             ],
             "figures": [
                 {
@@ -25,6 +23,7 @@ CHAPTER_4_CONTENT = {
         },
         {
             "heading": "4.2 C4 Architectural Model",
+            "page_break_before": True,
             "paragraphs": [
                 "To rigorously specify the system architecture across varying levels of technical abstraction, Noetrix is documented using the industry-standard C4 architectural model (Context, Containers, Components, Code):",
                 "Level 1: System Context: Illustrates how external actors (Job Applicants and Corporate Recruiters) interact with the Noetrix platform, and how Noetrix interfaces with external services (Groq LLM API for bounded bullet optimization). Crucially, candidate PII is scrubbed before any interaction with external APIs.",
@@ -43,11 +42,10 @@ CHAPTER_4_CONTENT = {
         },
         {
             "heading": "4.3 Data Flow Modeling (DFD Levels 0, 1, and 2)",
+            "page_break_before": True,
             "paragraphs": [
                 "The flow of data through the Noetrix platform is formally modeled across three levels of hierarchical Data Flow Diagrams (DFDs):",
-                "4.3.1 DFD Level 0 (Context Level Diagram): The candidate submits raw resume files (PDF/DOCX) and an optional target Job Description to the Noetrix boundary. The recruiter submits a corporate Job Description, custom metric weights, and a batch of applicant resumes. Noetrix processes the inputs statelessly and outputs transparent audit scores, OpenResume parse data, tailored bullet suggestions, and ranked candidate shortlists with complete audit dossiers.",
-                "4.3.2 DFD Level 1 (Functional Decomposition Diagram): Ingestion and document parsing processes decompose uploaded files into structured plain text, extracting contact information, detected sections, and technical skills. The parsed resume and structured JD features are piped to Process 2.0 (Scoring Core), which runs all six metric scorers in parallel, computes normalized weighted composites, checks the 50% Soft Knockout rule, and emits a ScoreResult. For candidates, Process 3.0 (Tailoring Engine) evaluates bullet points against Google's XYZ formula and emits verified rewrites. For recruiters, Process 4.0 (Batch Ranker) ingests all candidate ScoreResults, applies the 6-tier deterministic tie-breaking key, and generates the ranked candidate leaderboard.",
-                "4.3.3 DFD Level 2 (Scoring Core & GenAI Redaction Flow): Decomposes the internal operations of the Scoring and Tailoring subsystems. Step 1 executes regex-based PII scrubbing, stripping candidate names, emails, and phone numbers. Step 2 checks the SHA-256 in-memory cache for previously computed feature hashes. Step 3 acquires a concurrency permit from the thread semaphore (max 3 concurrent calls). Step 4 invokes the Groq LLM API with strict JSON schema constraints. Step 5 routes the output to the Zero-Fabrication Validator, which compares numbers, percentages, and skill tokens between the original and rewritten bullets. If validation fails, the system safely falls back to deterministic rule-based weak opener replacements."
+                "4.3.1 DFD Level 0 (Context Level Diagram): The candidate submits raw resume files (PDF/DOCX) and an optional target Job Description to the Noetrix boundary. The recruiter submits a corporate Job Description, custom metric weights, and a batch of applicant resumes. Noetrix processes the inputs statelessly and outputs transparent audit scores, OpenResume parse data, tailored bullet suggestions, and ranked candidate shortlists with complete audit dossiers."
             ],
             "figures": [
                 {
@@ -55,13 +53,31 @@ CHAPTER_4_CONTENT = {
                     "title": "Data Flow Diagram (DFD Level 0 — Context Level)",
                     "filename": "fig_4_3_dfd_level_0.png",
                     "description": "System boundary diagram illustrating external candidate and recruiter entities, primary data ingestion pipelines, and outbound audit deliverables."
-                },
+                }
+            ]
+        },
+        {
+            "heading": "4.3.2 DFD Level 1 (Functional Decomposition Modeling)",
+            "page_break_before": True,
+            "paragraphs": [
+                "Ingestion and document parsing processes decompose uploaded files into structured plain text, extracting contact information, detected sections, and technical skills. The parsed resume and structured JD features are piped to Process 2.0 (Scoring Core), which runs all six metric scorers in parallel, computes normalized weighted composites, checks the 50% Soft Knockout rule, and emits a ScoreResult. For candidates, Process 3.0 (Tailoring Engine) evaluates bullet points against Google's XYZ formula and emits verified rewrites. For recruiters, Process 4.0 (Batch Ranker) ingests all candidate ScoreResults, applies the 6-tier deterministic tie-breaking key, and generates the ranked candidate leaderboard."
+            ],
+            "figures": [
                 {
                     "id": "Figure 4.4",
                     "title": "Data Flow Diagram (DFD Level 1 — Functional Decomposition)",
                     "filename": "fig_4_4_dfd_level_1.png",
                     "description": "Functional decomposition diagram modeling document parsing, entity structuring, 6-metric scoring core, 50% soft knockout enforcement, bullet tailoring, and deterministic batch ranking."
-                },
+                }
+            ]
+        },
+        {
+            "heading": "4.3.3 DFD Level 2 (GenAI Privacy & Zero-Fabrication Pipeline)",
+            "page_break_before": True,
+            "paragraphs": [
+                "Decomposes the internal operations of the Scoring and Tailoring subsystems. Step 1 executes regex-based PII scrubbing, stripping candidate names, emails, and phone numbers. Step 2 checks the SHA-256 in-memory cache for previously computed feature hashes. Step 3 acquires a concurrency permit from the thread semaphore (max 3 concurrent calls). Step 4 invokes the Groq LLM API with strict JSON schema constraints. Step 5 routes the output to the Zero-Fabrication Validator, which compares numbers, percentages, and skill tokens between the original and rewritten bullets. If validation fails, the system safely falls back to deterministic rule-based weak opener replacements."
+            ],
+            "figures": [
                 {
                     "id": "Figure 4.5",
                     "title": "Data Flow Diagram (DFD Level 2 — GenAI Privacy & Zero-Fabrication Pipeline)",
@@ -72,10 +88,10 @@ CHAPTER_4_CONTENT = {
         },
         {
             "heading": "4.4 System Behavioral Modeling and Flowcharts",
+            "page_break_before": True,
             "paragraphs": [
                 "The behavioral dynamics of the two primary system workflows are modeled as formal state flowcharts:",
-                "1. Candidate Live Audit and Optimization Workflow: Upload Resume -> Multi-Format Parser (PDF/DOCX) -> Extract Sections, Skills, Contact -> Submit to /api/score -> Parallel Metric Scorer Execution -> Check Must-Have Coverage -> Apply 50-Point Soft Knockout Cap if <50% -> Compute Match Band (Strong, Moderate, Weak) -> Render Interactive Score Radar, Breakdown Cards & OpenResume ATS View -> Open Candidate Bullet Editor -> User Selects Weak Bullet -> Generate XYZ Optimization -> Validate via Zero-Fabrication Engine -> User Accepts Changes -> Re-Score Resume Instantly -> Export Clean ATS-Proof PDF.",
-                "2. Recruiter Batch Screening and Audit Workflow: Paste Requisition Job Description -> Automated JD Feature Extraction (/api/extract-jd) -> Extract Must-Have Skills, Nice-To-Have Skills, Min Experience -> Recruiter Configures Metric Weights and Must-Have Cap -> Drag & Drop Multiple Resumes (/api/rank) -> Multi-Threaded Batch Ingestion -> Individual Resume Scoring -> Apply 6-Tier Deterministic Tie-Breaking Algorithm -> Render Dynamic Shortlist Leaderboard -> Recruiter Filters by Match Band or Must-Have Coverage -> Click Candidate Row -> Open Slide-Over Audit Dossier Drawer -> Inspect Detailed Metric Rationales, Risk Flags, and ATS Parse Data -> Export Ranked Results to CSV."
+                "4.4.1 Candidate Live Audit and Optimization Workflow: Upload Resume -> Multi-Format Parser (PDF/DOCX) -> Extract Sections, Skills, Contact -> Submit to /api/score -> Parallel Metric Scorer Execution -> Check Must-Have Coverage -> Apply 50-Point Soft Knockout Cap if <50% -> Compute Match Band (Strong, Moderate, Weak) -> Render Interactive Score Radar, Breakdown Cards & OpenResume ATS View -> Open Candidate Bullet Editor -> User Selects Weak Bullet -> Generate XYZ Optimization -> Validate via Zero-Fabrication Engine -> User Accepts Changes -> Re-Score Resume Instantly -> Export Clean ATS-Proof PDF."
             ],
             "figures": [
                 {
@@ -83,7 +99,16 @@ CHAPTER_4_CONTENT = {
                     "title": "Candidate Live Audit & Optimization Workflow Flowchart",
                     "filename": "fig_4_6_flowchart_candidate.png",
                     "description": "State transition flowchart tracing candidate journey from file upload, multi-format parsing, 6-metric scoring, soft knockout decision gate, interactive radar review, to ATS PDF export."
-                },
+                }
+            ]
+        },
+        {
+            "heading": "4.4.2 Recruiter Batch Screening and Audit Workflow Flowchart",
+            "page_break_before": True,
+            "paragraphs": [
+                "Recruiter Batch Screening and Audit Workflow: Paste Requisition Job Description -> Automated JD Feature Extraction (/api/extract-jd) -> Extract Must-Have Skills, Nice-To-Have Skills, Min Experience -> Recruiter Configures Metric Weights and Must-Have Cap -> Drag & Drop Multiple Resumes (/api/rank) -> Multi-Threaded Batch Ingestion -> Individual Resume Scoring -> Apply 6-Tier Deterministic Tie-Breaking Algorithm -> Render Dynamic Shortlist Leaderboard -> Recruiter Filters by Match Band or Must-Have Coverage -> Click Candidate Row -> Open Slide-Over Audit Dossier Drawer -> Inspect Detailed Metric Rationales, Risk Flags, and ATS Parse Data -> Export Ranked Results to CSV."
+            ],
+            "figures": [
                 {
                     "id": "Figure 4.7",
                     "title": "Recruiter Batch Screening & Shortlisting Workflow Flowchart",
@@ -94,6 +119,7 @@ CHAPTER_4_CONTENT = {
         },
         {
             "heading": "4.5 Subsystem Decomposition and Module Architecture",
+            "page_break_before": True,
             "paragraphs": [
                 "The Noetrix codebase is architected into five decoupled core subsystems:",
                 "1. Document Ingestion Subsystem (app/services/parser): Utilizes pdfplumber for PDF extraction and python-docx for Word documents. Features column detection heuristics (evaluating character horizontal coordinate clusters across pages with >40 words to detect multi-column interleaving hazards) and table detection (identifying embedded table structures that frequently confound legacy ATS parsers).",
@@ -105,6 +131,7 @@ CHAPTER_4_CONTENT = {
         },
         {
             "heading": "4.6 Ephemeral Stateless Session Architecture and Zero-Retention Lifecycle",
+            "page_break_before": True,
             "paragraphs": [
                 "A foundational architectural decision in Noetrix is the complete elimination of a persistent database layer (such as PostgreSQL or MySQL) in favor of a completely stateless, ephemeral in-memory processing pipeline.",
                 "4.6.1 Threat Modeling and Data Breach Mitigation: When candidates upload resumes to corporate web platforms, traditional architectures persist raw documents, parsed entities, and contact information into relational databases, creating severe data breach vulnerabilities and extensive compliance overhead under GDPR (General Data Protection Regulation) and CCPA (California Consumer Privacy Act). In contrast, Noetrix treats all candidate documents as transient data streams.",

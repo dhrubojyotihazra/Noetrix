@@ -511,6 +511,21 @@ table.report-table td {
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
+/* Technical Mermaid & Data Flow Architecture Diagrams - Enlarged by 50% */
+.figure-container.diagram-figure {
+  margin: 12px auto 14px auto;
+}
+
+.figure-container.diagram-figure img {
+  max-width: 98% !important;
+  max-height: 495px !important; /* 50% larger than 330px (330 * 1.5 = 495px) */
+  width: auto;
+  height: auto;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
 .figure-caption {
   margin-top: 3px;
   margin-bottom: 6px;
@@ -848,8 +863,10 @@ p.appendix-desc {
                     fname = fig["filename"]
                     b64_src = img_b64_map.get(fname, "")
                     if b64_src:
+                        is_diag = fname.startswith("fig_")
+                        diag_cls = " diagram-figure" if is_diag else ""
                         html.append(f"""
-<div class="figure-container">
+<div class="figure-container{diag_cls}">
   <img src="{b64_src}" alt="{fig["title"]}">
   <div class="figure-caption">
     <strong>{fig["id"]}:</strong> {fig["title"]} — {fig["description"]}
@@ -1424,13 +1441,14 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
                     fname = fig["filename"]
                     fpath = get_image_file_path(fname)
                     if fpath and os.path.exists(fpath):
+                        diag_w = Inches(6.2) if fname.startswith("fig_") else Inches(5.5)
                         # Figure container
                         p_fig = doc.add_paragraph()
                         p_fig.alignment = WD_ALIGN_PARAGRAPH.CENTER
                         p_fig.paragraph_format.space_before = Pt(10)
                         p_fig.paragraph_format.space_after  = Pt(3)
                         set_para_shading(p_fig, RGBColor(0xf8, 0xfa, 0xfc))
-                        p_fig.add_run().add_picture(fpath, width=Inches(5.5))
+                        p_fig.add_run().add_picture(fpath, width=diag_w)
                         # Caption
                         cap_p = doc.add_paragraph()
                         cap_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
