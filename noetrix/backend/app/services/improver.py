@@ -103,15 +103,46 @@ class LLMBulletRewrite(BaseModel):
     changes: list[str] = Field(default_factory=list)
 
 
+NUMBER_WORDS: dict[str, str] = {
+    "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+    "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9",
+    "ten": "10", "eleven": "11", "twelve": "12", "thirteen": "13", "fourteen": "14",
+    "fifteen": "15", "sixteen": "16", "seventeen": "17", "eighteen": "18", "nineteen": "19",
+    "twenty": "20", "thirty": "30", "forty": "40", "fifty": "50",
+    "sixty": "60", "seventy": "70", "eighty": "80", "ninety": "90",
+    "hundred": "100", "thousand": "1000", "million": "1000000", "billion": "1000000000",
+}
+
+
+def extract_number_words(text: str) -> dict[str, str]:
+    """Extract English number-words mapped to their canonical digit representations."""
+    found: dict[str, str] = {}
+    tokens = re.findall(r"\b[a-zA-Z]+\b", text.lower())
+    for idx, t in enumerate(tokens):
+        if t in NUMBER_WORDS:
+            # Avoid matching 'one' in idioms like 'one of'
+            if t == "one" and idx + 1 < len(tokens) and tokens[idx + 1] == "of":
+                continue
+            found[t] = NUMBER_WORDS[t]
+    return found
+
+
 def extract_numbers(text: str) -> set[str]:
-    """Extract all numbers, percentages, multipliers, and currency tokens."""
+    """Extract all numbers, percentages, multipliers, currency tokens, and number words."""
     matches = re.findall(r"\b\d+(?:,\d+)*(?:\.\d+)?%?\+?|\b\d+x\b|\$\d+(?:,\d+)*", text.lower())
     clean_nums = set()
     for m in matches:
-        # Strip trailing punctuation
+        # Strip trailing punctuation and normalize commas inside digits (e.g. 15,000 -> 15000)
         c = m.strip().rstrip(".,;:+")
+        c = re.sub(r"(?<=\d),(?=\d)", "", c)
         if c:
             clean_nums.add(c)
+
+    # Include number-words normalized to digit strings
+    nw = extract_number_words(text)
+    for digit_val in nw.values():
+        clean_nums.add(digit_val)
+
     return clean_nums
 
 
@@ -145,15 +176,29 @@ def validate_bullet_rewrite(
         return False, "Non-bullet line must remain untouched."
 
     # 1. Numbers verification
-    orig_nums = extract_numbers(original)
+    orig_nums_raw = extract_numbers(original)
+    orig_nums = set(orig_nums_raw)
     if user_confirmed:
         orig_nums.update(user_confirmed)
 
     rewrite_nums = extract_numbers(rewrite)
+
+    # Check for changed number-words (e.g. 'four' to 'five')
+    orig_nw = extract_number_words(original)
+    rewrite_nw = extract_number_words(rewrite)
+    for w, val in rewrite_nw.items():
+        if orig_nw and val not in orig_nw.values() and val not in orig_nums_raw:
+            return False, f"Changed or invented number-words detected: '{w}'."
+
     new_nums = rewrite_nums - orig_nums
     if new_nums:
         # Detected hallucinated numbers!
         return False, f"Invented numbers or metrics detected: {sorted(list(new_nums))}."
+
+    # Check for dropped numbers: verified numbers from original must not be lost
+    dropped_nums = orig_nums_raw - rewrite_nums
+    if dropped_nums:
+        return False, f"Dropped numbers or metrics detected: {sorted(list(dropped_nums))}."
 
     # 2. Skills verification
     orig_lower = original.lower()
@@ -417,7 +462,7 @@ def tailor_resume_to_jd(
 
     for canonical, evidence_list in GROUNDED_MAPPINGS:
         if canonical not in existing_skills_lower and any(kw.lower() == canonical for kw in jd_skills):
-            if any(ev in resume_lower for ev in evidence_list):
+            if any(word_boundary_match(ev, resume_lower) for ev in evidence_list):
                 tailored.skills.append(canonical)
                 grounded_suggestions.append(canonical)
                 existing_skills_lower.add(canonical)

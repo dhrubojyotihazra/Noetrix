@@ -84,3 +84,49 @@ def test_did_not_matched_as_action_verb():
     from app.services.improver import is_action_verb_word
     assert is_action_verb_word("Did") is False
     assert is_action_verb_word("Directed") is True
+
+
+def test_validator_rejects_dropped_numbers():
+    """Rewrites dropping verified numbers present in the original bullet must be rejected."""
+    original = "Trained model on 10,000 images achieving 92% accuracy."
+    rewrite = "Trained model achieving 92% accuracy."
+    is_valid, reason = validate_bullet_rewrite(original, rewrite)
+    assert is_valid is False
+    assert "Dropped numbers" in reason or "dropped" in reason.lower()
+
+
+def test_validator_rejects_changed_number_words():
+    """Rewrites changing number-words (e.g. four to five) must be rejected."""
+    original = "Led a team of four software engineers."
+    rewrite = "Led a team of five software engineers."
+    is_valid, reason = validate_bullet_rewrite(original, rewrite)
+    assert is_valid is False
+    assert "number" in reason.lower()
+
+
+def test_validator_normalizes_comma_numbers():
+    """15,000 vs 15000 must be normalized and not flagged as a hallucinated number."""
+    original = "Processed 15,000 transactions per second."
+    rewrite = "Processed 15000 transactions per second."
+    is_valid, reason = validate_bullet_rewrite(original, rewrite)
+    assert is_valid is True, f"Expected valid rewrite, got rejection: {reason}"
+
+
+def test_grounded_mappings_does_not_match_robert_as_bert():
+    """Candidate named Robert must not trigger grounded skill suggestion for 'transformers' via 'bert'."""
+    from app.services.improver import tailor_resume_to_jd
+    from app.schemas.resume import ParsedResume
+    from app.schemas.jd import JDFeatures
+
+    resume = ParsedResume(
+        raw_text="Robert is an experienced engineer who worked on enterprise databases.",
+        skills=["sql"]
+    )
+    jd = JDFeatures(
+        must_have_skills=["transformers"]
+    )
+    res = tailor_resume_to_jd(resume, jd)
+    assert "transformers" not in (res.tailored_resume.skills or []), "Substring 'bert' in 'Robert' must not ground transformers"
+
+
+

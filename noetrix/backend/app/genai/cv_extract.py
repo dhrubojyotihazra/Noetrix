@@ -149,7 +149,7 @@ def extract_cv_structure_hybrid(parsed: ParsedResume) -> ParsedResume:
         if not parsed.work_experience and llm_out.work_experience:
             valid_work: list[WorkEntry] = []
             for idx, w in enumerate(llm_out.work_experience):
-                if not _fuzzy_matches_source(w.company, raw_text, threshold=75.0) and not _fuzzy_matches_source(w.title, raw_text, threshold=75.0):
+                if not _fuzzy_matches_source(w.company, raw_text, threshold=75.0):
                     continue
                 if not _date_in_source(w.dates, raw_text):
                     continue
@@ -199,7 +199,7 @@ def extract_cv_structure_hybrid(parsed: ParsedResume) -> ParsedResume:
                 s_clean = s.strip().lower()
                 if s_clean in GENERIC_NON_SKILLS or len(s_clean) < 2:
                     continue
-                if s_clean in ALL_TAXONOMY_SKILLS or word_boundary_match(s_clean, lower_raw):
+                if word_boundary_match(s_clean, lower_raw):
                     clean_skills.append(normalize_term(s_clean))
             if clean_skills:
                 parsed.skills = sorted(list(set(parsed.skills + clean_skills)))
