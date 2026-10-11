@@ -74,3 +74,39 @@ def test_tailoring_gain_matches_actual_score_delta(sample_data):
     assert tailored_res.estimated_gain == expected_gain
     assert tailored_res.estimated_score_before == baseline_score
     assert tailored_res.estimated_score_after == after_score
+
+
+def test_capped_cv_gets_weak_band():
+    """A CV that triggers the soft knockout cap must get band 'weak' instead of 'moderate'."""
+    resume = ParsedResume(
+        filename="capped_candidate.pdf",
+        contact=ContactInfo(name="Bob Smith", email="bob@example.com"),
+        summary="Senior Software Engineer with 8 years of experience.",
+        skills=["python"],  # only 1 skill out of 4 must-haves (25% coverage < 50%)
+        work_experience=[
+            WorkEntry(
+                id="1",
+                title="Software Engineer",
+                company="TechCorp",
+                dates="2016 - 2024",
+                bullets=[
+                    "Engineered Python backends serving 50,000 users with 99.9% uptime.",
+                    "Reduced database query times by 40% across PostgreSQL clusters."
+                ]
+            )
+        ],
+        education=[EduEntry(id="1", institution="MIT", degree="Master of Science in Computer Science", dates="2014 - 2016")],
+        sections_detected=["summary", "skills", "experience", "education"]
+    )
+    jd = JDFeatures(
+        title="ML Platform Engineer",
+        raw_text="Requirements: pytorch, docker, kubernetes, terraform. 5+ years experience.",
+        must_have_skills=["pytorch", "docker", "kubernetes", "terraform"],
+        nice_to_have_skills=["python"],
+        min_experience_years=5.0
+    )
+
+    res = score_resume_against_jd(resume, jd)
+    assert res.is_capped is True, "Candidate with 0/4 must-haves and high composite score must be capped"
+    assert res.overall_score == 50.0, "Capped score must equal 50.0"
+    assert res.match_band == "weak", f"Capped score must be classified as 'weak', got '{res.match_band}'"

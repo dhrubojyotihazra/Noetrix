@@ -78,7 +78,9 @@ def score_resume_against_jd(
         risk_flags.append(f"Tenure deficit: {est_years} yrs vs {jd.min_experience_years} yrs required.")
 
     # 3. Classify Match Band
-    if final_score >= cfg.strong_band_threshold:
+    if is_capped:
+        match_band = "weak"
+    elif final_score >= cfg.strong_band_threshold:
         match_band = "strong"
     elif final_score >= cfg.moderate_band_threshold:
         match_band = "moderate"

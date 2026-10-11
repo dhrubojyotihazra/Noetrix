@@ -20,7 +20,7 @@ Noetrix is an ATS simulation app with **two doors** powered by **one determinist
 
 2. **Recruiter Door**:
    - **Requisition Setup**: Paste JD, auto-extract mandatory must-haves, set required tenure, and configure custom weight sliders.
-   - **Soft Knockout Cap**: Missing any mandatory must-have skill caps the total score at 50 points, preserving visibility without polluting the top ranks.
+   - **Soft Knockout Cap**: Matching fewer than half (<50%) of mandatory must-have skills caps the total score at 50 points and classifies the candidate in the 'weak' match band, preserving visibility without polluting the top ranks.
    - **Bulk Ingestion**: Screen up to 50 CVs in parallel (or 1-click load 5 demo candidate resumes).
    - **Explainable Leaderboard**: 6-tier deterministic tie-breaking (`score` → `must-have coverage` → `keywords` → `experience` → `impact` → `FIFO`).
    - **Candidate Dossier Drawer**: Inspect detailed evidence snippets and audit risk flags for each applicant.

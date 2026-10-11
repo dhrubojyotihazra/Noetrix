@@ -115,7 +115,7 @@ export default function HowScoringWorksPage() {
             THE MUST-HAVE KNOCKOUT CAP
           </h3>
           <p className="font-sans text-xs text-ink/70 leading-relaxed">
-            If a recruiter marks specific technical requirements as mandatory must-haves, missing even one automatically caps the candidate&apos;s overall score at 50 points. This soft knockout ensures candidates without core qualifications never reach the top ranks while preserving their record for human review.
+            If a recruiter marks specific technical requirements as mandatory must-haves, matching fewer than half (&lt;50%) of them automatically caps the candidate&apos;s overall score at 50 points and classifies them in the &apos;weak&apos; match band. This soft knockout ensures candidates lacking core qualifications never reach the top ranks while preserving their record for human review.
           </p>
         </div>
 
