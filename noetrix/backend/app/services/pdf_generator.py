@@ -8,6 +8,7 @@ Templates:
 """
 
 import io
+from xml.sax.saxutils import escape as xml_escape
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
@@ -137,16 +138,16 @@ def generate_resume_pdf(resume: ParsedResume, template: str = "classic") -> byte
 
     # 1. Header (Name & Contact)
     candidate_name = resume.contact.name or resume.filename.replace(".pdf", "").replace("_", " ").title()
-    story.append(Paragraph(candidate_name, title_style))
+    story.append(Paragraph(xml_escape(candidate_name), title_style))
 
     contact_bits = []
     if resume.contact.email:
-        contact_bits.append(resume.contact.email)
+        contact_bits.append(xml_escape(resume.contact.email))
     if resume.contact.phone:
-        contact_bits.append(resume.contact.phone)
+        contact_bits.append(xml_escape(resume.contact.phone))
     if resume.contact.location:
         loc = resume.contact.location.replace("\n", " ").strip()
-        contact_bits.append(loc)
+        contact_bits.append(xml_escape(loc))
     if resume.contact.linkedin:
         contact_bits.append("LinkedIn")
     if resume.contact.github:
@@ -159,13 +160,13 @@ def generate_resume_pdf(resume: ParsedResume, template: str = "classic") -> byte
     # 2. Professional Summary
     if resume.summary and resume.summary.strip():
         story.append(Paragraph("Professional Summary", section_heading))
-        story.append(Paragraph(resume.summary.strip(), body_style))
+        story.append(Paragraph(xml_escape(resume.summary.strip()), body_style))
         story.append(Spacer(1, spacer_h))
 
     # 3. Technical Skills
     if resume.skills:
         story.append(Paragraph("Technical Skills", section_heading))
-        skills_str = " &nbsp;&bull;&nbsp; ".join(resume.skills)
+        skills_str = " &nbsp;|&nbsp; ".join(xml_escape(s) for s in resume.skills)
         story.append(Paragraph(skills_str, body_style))
         story.append(Spacer(1, spacer_h))
 
@@ -173,56 +174,58 @@ def generate_resume_pdf(resume: ParsedResume, template: str = "classic") -> byte
     if resume.work_experience:
         story.append(Paragraph("Work Experience", section_heading))
         for exp in resume.work_experience:
-            header_text = f"<b>{exp.title}</b>"
+            header_text = f"<b>{xml_escape(exp.title)}</b>"
             if exp.company:
-                header_text += f" &nbsp;—&nbsp; {exp.company}"
+                header_text += f" &nbsp;—&nbsp; {xml_escape(exp.company)}"
             if exp.dates:
-                header_text += f" &nbsp;({exp.dates})"
+                header_text += f" &nbsp;({xml_escape(exp.dates)})"
             story.append(Paragraph(header_text, job_title_style))
 
             for bullet in exp.bullets:
-                clean_b = bullet.strip().lstrip("-•*–—> ")
-                story.append(Paragraph(f"&bull;&nbsp;&nbsp;{clean_b}", bullet_style))
+                clean_b = bullet.strip().lstrip("-•*–—> ").strip()
+                story.append(Paragraph(f"-&nbsp;&nbsp;{xml_escape(clean_b)}", bullet_style))
             story.append(Spacer(1, spacer_h))
 
     # 5. Projects
     if resume.projects:
         story.append(Paragraph("Projects", section_heading))
         for proj in resume.projects:
-            proj_header = f"<b>{proj.name}</b>"
+            proj_header = f"<b>{xml_escape(proj.name)}</b>"
             tech_str = ""
             if getattr(proj, "technologies", None):
                 tech_str = ", ".join(proj.technologies) if isinstance(proj.technologies, list) else str(proj.technologies)
             elif getattr(proj, "tech_stack", None):
                 tech_str = str(proj.tech_stack)
             if tech_str:
-                proj_header += f" &nbsp;[{tech_str}]"
+                proj_header += f" &nbsp;[{xml_escape(tech_str)}]"
             story.append(Paragraph(proj_header, job_title_style))
 
             for bullet in proj.bullets:
-                clean_b = bullet.strip().lstrip("-•*–—> ")
-                story.append(Paragraph(f"&bull;&nbsp;&nbsp;{clean_b}", bullet_style))
+                clean_b = bullet.strip().lstrip("-•*–—> ").strip()
+                story.append(Paragraph(f"-&nbsp;&nbsp;{xml_escape(clean_b)}", bullet_style))
             story.append(Spacer(1, spacer_h))
 
     # 6. Education
     if resume.education:
         story.append(Paragraph("Education", section_heading))
         for edu in resume.education:
-            edu_str = f"<b>{edu.institution}</b>"
+            edu_str = f"<b>{xml_escape(edu.institution)}</b>"
             if edu.degree:
-                edu_str += f" &nbsp;—&nbsp; {edu.degree}"
+                edu_str += f" &nbsp;—&nbsp; {xml_escape(edu.degree)}"
+            if getattr(edu, "dates", None):
+                edu_str += f" &nbsp;({xml_escape(edu.dates)})"
             story.append(Paragraph(edu_str, job_title_style))
             for bullet in edu.bullets:
-                clean_b = bullet.strip().lstrip("-•*–—> ")
-                story.append(Paragraph(f"&bull;&nbsp;&nbsp;{clean_b}", bullet_style))
+                clean_b = bullet.strip().lstrip("-•*–—> ").strip()
+                story.append(Paragraph(f"-&nbsp;&nbsp;{xml_escape(clean_b)}", bullet_style))
             story.append(Spacer(1, spacer_h))
 
     # 7. Certifications
     if resume.certifications:
         story.append(Paragraph("Certifications & Credentials", section_heading))
         for cert in resume.certifications:
-            clean_c = cert.strip().lstrip("-•*–—> ")
-            story.append(Paragraph(f"&bull;&nbsp;&nbsp;{clean_c}", bullet_style))
+            clean_c = cert.strip().lstrip("-•*–—> ").strip()
+            story.append(Paragraph(f"-&nbsp;&nbsp;{xml_escape(clean_c)}", bullet_style))
 
     doc.build(story)
     buffer.seek(0)

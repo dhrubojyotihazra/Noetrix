@@ -55,7 +55,7 @@ def parse_pdf_bytes(file_bytes: bytes, filename: str = "resume.pdf") -> ParsedRe
     sections = split_into_sections(raw_text)
 
     DATE_PATTERN = re.compile(r"\b(20\d\d|19\d\d|present|current|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b", re.IGNORECASE)
-    BULLET_PREFIX = re.compile(r"^[\-\•\*\–\—\>]\s*|^\d+[\.\)]\s*")
+    BULLET_PREFIX = re.compile(r"^[\-\•\*\–\—\>]\s*|^\d+[\.\)]\s*|^\(cid:\d+\)\s*")
 
     # Helper: parse items with bullet wrapping support
     def parse_experience_or_projects(lines: list[str], is_project: bool = False):

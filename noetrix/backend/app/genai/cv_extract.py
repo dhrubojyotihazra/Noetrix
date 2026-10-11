@@ -103,7 +103,7 @@ def extract_cv_structure_hybrid(parsed: ParsedResume) -> ParsedResume:
     # Count raw lines with bullet markers
     raw_bullet_markers = sum(
         1 for line in raw_lines
-        if re.match(r"^[\-\•\*\–\—\>]\s*|^\d+[\.\)]\s*", line)
+        if re.match(r"^[\-\•\*\–\—\>]\s*|^\d+[\.\)]\s*|^\(cid:\d+\)\s*", line)
     )
     total_parsed_bullets = sum(len(w.bullets) for w in parsed.work_experience) + sum(len(p.bullets) for p in parsed.projects)
 
