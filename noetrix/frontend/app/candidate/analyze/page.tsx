@@ -85,12 +85,10 @@ export default function CandidateAnalyzePage() {
       // 3. Compute deterministic ATS score
       const scoreResult = await scoreResume(parsedResume, parsedJD);
 
-      // Save in session storage & local storage for persistent cross-page flow
+      // Save in session storage only (no server-side storage; stays in browser tab until closed)
       sessionStorage.setItem("noetrix_resume", JSON.stringify(parsedResume));
       sessionStorage.setItem("noetrix_jd", JSON.stringify(parsedJD));
       sessionStorage.setItem("noetrix_score", JSON.stringify(scoreResult));
-      localStorage.setItem("noetrix_resume", JSON.stringify(parsedResume));
-      localStorage.setItem("noetrix_jd", JSON.stringify(parsedJD));
 
       router.push("/candidate/report");
     } catch (err: unknown) {
@@ -111,7 +109,7 @@ export default function CandidateAnalyzePage() {
           SCAN YOUR CV AGAINST A TARGET JOB
         </h1>
         <p className="font-sans text-sm sm:text-base text-ink/70 max-w-2xl">
-          Upload your resume and paste the job description to run our 6-metric ATS evaluation. Nothing is saved to a database; your data vanishes on reload.
+          Upload your resume and paste the job description to run our 6-metric ATS evaluation. No server-side storage; a copy stays in the browser tab until it is closed.
         </p>
       </div>
 

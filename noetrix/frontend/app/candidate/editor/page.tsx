@@ -48,9 +48,9 @@ export default function CandidateEditorPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<"classic" | "modern" | "compact" | "executive">("classic");
 
   useEffect(() => {
-    const rawResume = sessionStorage.getItem("noetrix_resume") || localStorage.getItem("noetrix_resume");
-    const rawJD = sessionStorage.getItem("noetrix_jd") || localStorage.getItem("noetrix_jd");
-    const rawScore = sessionStorage.getItem("noetrix_score") || localStorage.getItem("noetrix_score");
+    const rawResume = sessionStorage.getItem("noetrix_resume");
+    const rawJD = sessionStorage.getItem("noetrix_jd");
+    const rawScore = sessionStorage.getItem("noetrix_score");
 
     if (!rawResume || !rawJD) {
       router.push("/candidate/analyze");

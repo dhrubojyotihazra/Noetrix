@@ -68,6 +68,25 @@ export default function Navbar() {
     },
   ];
 
+  const handleClearData = () => {
+    try {
+      const sKeys: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith("noetrix_")) sKeys.push(k);
+      }
+      sKeys.forEach((k) => sessionStorage.removeItem(k));
+
+      const lKeys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("noetrix_")) lKeys.push(k);
+      }
+      lKeys.forEach((k) => localStorage.removeItem(k));
+      window.location.href = "/";
+    } catch {}
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-canvas/95">
       {/* Topbar: Balanced logo size + Menu Trigger (Horizontal tab names removed per user request) */}
@@ -90,8 +109,16 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Right Actions: Instant CTA + Menu Trigger with burger animation */}
-        <div className="flex items-center gap-3.5">
+        {/* Right Actions: Instant CTA + Clear Data + Menu Trigger */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <button
+            onClick={handleClearData}
+            title="Clear all stored resume & JD session keys"
+            className="text-[11px] sm:text-xs font-sans font-medium text-ink/70 hover:text-accent-coral border border-ink/20 hover:border-accent-coral px-3 py-1.5 rounded-full transition-colors"
+          >
+            Clear my data
+          </button>
+
           <Link
             href="/candidate/analyze"
             className="hidden sm:flex items-center gap-2 bg-ink text-canvas font-sans text-xs font-semibold px-5 py-2.5 rounded-full hover:bg-ink-slate transition-all shadow-sm"
@@ -174,11 +201,16 @@ export default function Navbar() {
             <div className="flex items-center gap-5">
               <span className="font-semibold text-ink">engine@noetrix.ai</span>
               <span>•</span>
-              <span>100% Ephemeral Sessions</span>
+              <span>No server-side storage; data stays in tab until closed</span>
             </div>
 
             <div className="flex items-center gap-5">
-              <span>Zero Stored Data</span>
+              <button
+                onClick={handleClearData}
+                className="hover:text-accent-coral underline cursor-pointer"
+              >
+                Clear my data
+              </button>
               <span>•</span>
               <span>Deterministic ATS Scoring</span>
             </div>

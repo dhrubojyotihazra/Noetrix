@@ -3,7 +3,7 @@
 > **Capstone Project**: Deterministic 6-Metric Hybrid ATS Simulation Engine  
 > **Frontend**: Next.js 15 (React 19, Tailwind CSS) → Deployed to **Vercel**  
 > **Backend**: FastAPI (Python 3.11+, scikit-learn, sentence-transformers) → Deployed to **Render**  
-> **Architecture**: 100% Ephemeral & Stateless · No database · Zero data stored
+> **Architecture**: Stateless backend · No server-side storage; a copy stays in the browser tab until it is closed
 
 ---
 

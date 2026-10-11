@@ -20,7 +20,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Noetrix · Hybrid ATS Scorer & Ranker",
   description:
-    "A transparent, deterministic ATS resume simulation engine with zero stored data. Candidate scoring, AI tailoring, and recruiter explainable shortlists.",
+    "A transparent, deterministic ATS resume simulation engine with no server-side storage; a copy stays in the browser tab until it is closed. Candidate scoring, AI tailoring, and recruiter explainable shortlists.",
   icons: {
     icon: [
       { url: "/favicon.png", sizes: "any" },

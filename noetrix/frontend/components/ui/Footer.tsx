@@ -1,7 +1,28 @@
+"use client";
+
 import Link from "next/link";
-import { ShieldCheck, Sparkles, RefreshCw } from "lucide-react";
+import { ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 
 export default function Footer() {
+  const handleClearData = () => {
+    try {
+      const sKeys: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith("noetrix_")) sKeys.push(k);
+      }
+      sKeys.forEach((k) => sessionStorage.removeItem(k));
+
+      const lKeys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("noetrix_")) lKeys.push(k);
+      }
+      lKeys.forEach((k) => localStorage.removeItem(k));
+      window.location.href = "/";
+    } catch {}
+  };
+
   return (
     <footer className="w-full bg-ink text-canvas border-t-2 border-ink pt-14 sm:pt-16 pb-8 px-6">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-start gap-10">
@@ -24,16 +45,19 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 font-sans text-xs text-canvas/90">
           <div className="flex items-center gap-2 border border-canvas/25 px-3.5 py-2 rounded-full">
             <ShieldCheck className="w-4 h-4 text-accent-yellow" />
-            <span>Nothing is saved</span>
+            <span>No server-side storage</span>
           </div>
           <div className="flex items-center gap-2 border border-canvas/25 px-3.5 py-2 rounded-full">
-            <RefreshCw className="w-4 h-4 text-accent-lilac" />
-            <span>Reload the page to clear your data</span>
+            <Sparkles className="w-4 h-4 text-accent-lilac" />
+            <span>Data stays in browser tab until closed</span>
           </div>
-          <div className="flex items-center gap-2 border border-canvas/25 px-3.5 py-2 rounded-full">
-            <Sparkles className="w-4 h-4 text-accent-coral" />
-            <span>A person makes the final call</span>
-          </div>
+          <button
+            onClick={handleClearData}
+            className="flex items-center gap-2 border border-accent-coral/60 bg-accent-coral/15 hover:bg-accent-coral/30 px-3.5 py-2 rounded-full text-accent-coral transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4 text-accent-coral" />
+            <span className="font-semibold">Clear my data</span>
+          </button>
         </div>
       </div>
 
