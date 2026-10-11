@@ -68,3 +68,19 @@ def test_validator_accepts_clean_active_verb_upgrade():
 
     is_valid, reason = validate_bullet_rewrite(original, rewrite)
     assert is_valid is True
+
+
+def test_worked_on_building_becomes_built(monkeypatch):
+    """A bullet with letters and spaces like 'Worked on building...' must NOT be treated as a non-bullet line."""
+    monkeypatch.setenv("LLM_MODE", "off")
+    bullet = "Worked on building a recommendation engine"
+    assert is_non_bullet_line(bullet) is False, "A bullet consisting of letters and spaces must not match all-caps heading"
+    res = enhance_single_bullet(bullet)
+    assert res.enhanced == "Built a recommendation engine.", f"Expected 'Built a recommendation engine.', got '{res.enhanced}'"
+
+
+def test_did_not_matched_as_action_verb():
+    """The word 'Did' must not match 'directed' via loose prefix/suffix stripping."""
+    from app.services.improver import is_action_verb_word
+    assert is_action_verb_word("Did") is False
+    assert is_action_verb_word("Directed") is True

@@ -64,12 +64,37 @@ MEANING_REVERSAL_PAIRS = [
 ]
 
 NON_BULLET_PATTERNS = [
-    r"^(tech\s+stack|technologies|tools|languages|skills)[\s\:\·]",
-    r"^(b\.tech|bachelor|master|m\.tech|phd|diploma|degree)\b",
-    r"^(certifications?|licenses?|credentials?)[\s\:\·]",
-    r"^[\w\s]+\s*·\s*[\w\s]+\s*·\s*[\w\s]+",  # Tech stack separator (Flask · React · DistilBERT)
-    r"^[A-Z\s]{4,}$",  # All caps headings
+    re.compile(r"^(tech\s+stack|technologies|tools|languages|skills)[\s\:\·]", re.IGNORECASE),
+    re.compile(r"^(b\.tech|bachelor|master|m\.tech|phd|diploma|degree)\b", re.IGNORECASE),
+    re.compile(r"^(certifications?|licenses?|credentials?)[\s\:\·]", re.IGNORECASE),
+    re.compile(r"^[\w\s]+\s*·\s*[\w\s]+\s*·\s*[\w\s]+", re.IGNORECASE),  # Tech stack separator (Flask · React · DistilBERT)
+    re.compile(r"^[A-Z\s]{4,}$"),  # Case-sensitive all caps headings (e.g. WORK EXPERIENCE)
 ]
+
+ACTION_VERB_LEMMAS = {
+    "build": "built",
+    "develop": "developed",
+    "engineer": "engineered",
+    "design": "designed",
+    "implement": "implemented",
+    "create": "created",
+    "optimize": "optimized",
+    "automate": "automated",
+    "lead": "led",
+    "manage": "managed",
+    "deploy": "deployed",
+    "architect": "architected",
+    "train": "trained",
+    "scale": "scaled",
+}
+
+
+def is_action_verb_word(word: str) -> bool:
+    """Check whether a single word is a recognized action verb without loose suffix stripping."""
+    if not word:
+        return False
+    w = word.lower().rstrip(".,:;!?")
+    return w in ACTION_VERBS or ACTION_VERB_LEMMAS.get(w) in ACTION_VERBS
 
 
 class LLMBulletRewrite(BaseModel):
@@ -95,7 +120,7 @@ def is_non_bullet_line(line: str) -> bool:
     trimmed = line.strip()
     if not trimmed:
         return True
-    return any(bool(re.search(pat, trimmed, re.IGNORECASE)) for pat in NON_BULLET_PATTERNS)
+    return any(bool(pat.search(trimmed)) for pat in NON_BULLET_PATTERNS)
 
 
 def validate_bullet_rewrite(
@@ -269,11 +294,7 @@ def enhance_single_bullet(
             break
 
     words = clean.split()
-    first_word_is_action = False
-    if words:
-        first_word_lower = words[0].lower().rstrip("ed").rstrip("d")
-        if any(v.lower().startswith(first_word_lower) for v in ACTION_VERBS):
-            first_word_is_action = True
+    first_word_is_action = is_action_verb_word(words[0]) if words else False
 
     # If already strong action-oriented phrasing without weak openers, preserve directly
     if first_word_is_action and not has_weak_opener:
@@ -301,6 +322,8 @@ def enhance_single_bullet(
                 clean, job_title, target_keywords, candidate_skills
             )
             if llm_enhanced != clean:
+                if not llm_enhanced.endswith((".", "!", "?")):
+                    llm_enhanced += "."
                 return EnhanceBulletResponse(
                     original=clean,
                     enhanced=llm_enhanced,
@@ -327,8 +350,7 @@ def enhance_single_bullet(
     # If the first word is already a recognized strong action verb, do not mutate it
     words = transformed.split()
     if not verb_swapped and words:
-        first_word_lower = words[0].lower().rstrip("ed").rstrip("d")
-        if any(v.lower().startswith(first_word_lower) for v in ACTION_VERBS):
+        if is_action_verb_word(words[0]):
             transformed = clean
 
     # Ensure capitalized and ends with a period
