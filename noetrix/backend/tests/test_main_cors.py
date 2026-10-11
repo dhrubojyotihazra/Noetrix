@@ -52,3 +52,34 @@ def test_cors_env_configured_origins(monkeypatch):
         }
     )
     assert resp1.headers.get("access-control-allow-origin") == "https://noetrix.example.com"
+
+
+def test_cors_origin_regex(monkeypatch):
+    """CORS origins matching ALLOWED_ORIGIN_REGEX (e.g. Vercel deployment subdomains) are allowed."""
+    monkeypatch.setenv("ALLOWED_ORIGIN_REGEX", r"https://.*\.vercel\.app")
+    import importlib
+    import app.main
+    importlib.reload(app.main)
+
+    client = TestClient(app.main.app)
+
+    # Vercel preview domain
+    resp_vercel = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://noetrix-preview-git-feature.vercel.app",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert resp_vercel.headers.get("access-control-allow-origin") == "https://noetrix-preview-git-feature.vercel.app"
+
+    # Non-matching domain
+    resp_other = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://other-domain.com",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert "access-control-allow-origin" not in resp_other.headers
+

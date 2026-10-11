@@ -16,13 +16,18 @@ allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
 if not allowed_origins:
     allowed_origins = ["http://localhost:3000"]
 
+raw_origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", "")
+origin_regex = raw_origin_regex.strip() if raw_origin_regex.strip() else None
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Mount API Routers
 app.include_router(health.router)

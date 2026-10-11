@@ -20,6 +20,9 @@ services:
         value: "openai/gpt-oss-20b"
       - key: ALLOWED_ORIGINS
         value: "http://localhost:3000,https://noetrix.vercel.app"
+      - key: ALLOWED_ORIGIN_REGEX
+        value: "https://.*\\.vercel\\.app"
       - key: GROQ_API_KEY
         sync: false
+
 
