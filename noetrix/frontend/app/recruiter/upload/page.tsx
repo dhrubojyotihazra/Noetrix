@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, CheckCircle2, Loader2, ArrowRight, Sparkles, Trash2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, Loader2, ArrowRight, Sparkles, Trash2, AlertCircle, XCircle } from "lucide-react";
 import { parseResumeFile, rankResumes } from "@/lib/api";
 import { ParsedResume, JDFeatures, ScoringConfig } from "@/lib/types";
+
+const MAX_RESUMES = 50;
 
 // 5 Sample Candidate Resumes for instant 1-click evaluation
 const SAMPLE_CANDIDATES: ParsedResume[] = [
@@ -126,6 +128,9 @@ export default function RecruiterUploadPage() {
   const [parsedResumes, setParsedResumes] = useState<ParsedResume[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [failedUploads, setFailedUploads] = useState<{ filename: string; reason: string }[]>([]);
+  const [currentProgress, setCurrentProgress] = useState<{ current: number; total: number; filename: string } | null>(null);
 
   useEffect(() => {
     const rawJD = sessionStorage.getItem("noetrix_recruiter_jd");
@@ -146,27 +151,61 @@ export default function RecruiterUploadPage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const files = Array.from(e.target.files);
+    const incomingFiles = Array.from(e.target.files);
+    e.target.value = ""; // Reset input so same files can be re-selected if needed
+    setUploadError(null);
+
+    if (incomingFiles.length === 0) return;
+
+    // Enforce 50 resumes maximum limit
+    if (parsedResumes.length >= MAX_RESUMES) {
+      setUploadError(`Maximum limit of ${MAX_RESUMES} resumes reached. Clear some resumes before uploading more.`);
+      return;
+    }
+
+    let filesToProcess = incomingFiles;
+    if (parsedResumes.length + incomingFiles.length > MAX_RESUMES) {
+      const allowedSlots = MAX_RESUMES - parsedResumes.length;
+      setUploadError(
+        `Upload limit notice: You can only upload up to ${MAX_RESUMES} resumes total. Processing first ${allowedSlots} of ${incomingFiles.length} selected files.`
+      );
+      filesToProcess = incomingFiles.slice(0, allowedSlots);
+    }
 
     setIsProcessing(true);
-    setUploadStatus(`Parsing ${files.length} document(s)...`);
-
     const newParsed: ParsedResume[] = [];
-    for (const file of files) {
+    const newFailures: { filename: string; reason: string }[] = [];
+
+    for (let i = 0; i < filesToProcess.length; i++) {
+      const file = filesToProcess[i];
+      setCurrentProgress({ current: i + 1, total: filesToProcess.length, filename: file.name });
+      setUploadStatus(`Parsing file ${i + 1} of ${filesToProcess.length}: ${file.name}...`);
+
       try {
         const parsed = await parseResumeFile(file);
         newParsed.push(parsed);
-      } catch (err) {
+      } catch (err: any) {
+        const reason = err?.message || "Failed to parse document";
+        newFailures.push({ filename: file.name, reason });
         console.error(`Failed parsing ${file.name}:`, err);
       }
     }
 
-    setParsedResumes((prev) => [...prev, ...newParsed]);
+    if (newParsed.length > 0) {
+      setParsedResumes((prev) => [...prev, ...newParsed]);
+    }
+    if (newFailures.length > 0) {
+      setFailedUploads((prev) => [...prev, ...newFailures]);
+    }
+
     setIsProcessing(false);
+    setCurrentProgress(null);
     setUploadStatus(null);
   };
 
   const handleLoadSampleCandidates = () => {
+    setUploadError(null);
+    setFailedUploads([]);
     setParsedResumes(SAMPLE_CANDIDATES);
   };
 
@@ -197,51 +236,111 @@ export default function RecruiterUploadPage() {
           UPLOAD BATCH APPLICANT CVS
         </h1>
         <p className="font-sans text-sm text-ink/70 max-w-2xl">
-          Screening for <strong className="text-ink">{jd.title}</strong> ({jd.must_have_skills.length} mandatory must-haves). Upload up to 50 resumes or load our demo batch.
+          Screening for <strong className="text-ink">{jd.title}</strong> ({jd.must_have_skills.length} mandatory must-haves). Upload up to {MAX_RESUMES} resumes or load our demo batch.
         </p>
       </div>
+
+      {/* Error Banner */}
+      {uploadError && (
+        <div className="p-4 bg-accent-coral/15 border-2 border-accent-coral rounded-2xl flex items-start gap-3 text-ink text-xs font-medium">
+          <AlertCircle className="w-5 h-5 text-accent-coral shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <strong className="block font-bold">Upload Warning</strong>
+            {uploadError}
+          </div>
+          <button onClick={() => setUploadError(null)} className="text-ink/60 hover:text-ink font-bold">Dismiss</button>
+        </div>
+      )}
 
       {/* Upload Dropzone */}
       <div className="border-2 border-ink rounded-3xl bg-card-surface p-8 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h2 className="font-display text-2xl uppercase tracking-wide text-ink">
-            BATCH RESUME INGESTION
-          </h2>
+          <div>
+            <h2 className="font-display text-2xl uppercase tracking-wide text-ink">
+              BATCH RESUME INGESTION
+            </h2>
+            <span className="text-xs text-ink/60 font-sans">
+              Capacity: {parsedResumes.length} / {MAX_RESUMES} resumes
+            </span>
+          </div>
           <button
             onClick={handleLoadSampleCandidates}
-            className="flex items-center gap-2 bg-accent-yellow/40 hover:bg-accent-yellow border border-ink text-xs font-bold px-4 py-2 rounded-full transition-colors"
+            disabled={isProcessing}
+            className="flex items-center gap-2 bg-accent-yellow/40 hover:bg-accent-yellow border border-ink text-xs font-bold px-4 py-2 rounded-full transition-colors disabled:opacity-50"
           >
             <Sparkles className="w-4 h-4 text-ink" />
             <span>Load 5 Demo Candidate Resumes</span>
           </button>
         </div>
 
-        <div className="border-2 border-dashed border-ink/20 hover:border-ink rounded-2xl p-8 text-center transition-all bg-canvas/30 cursor-pointer flex flex-col items-center justify-center">
+        <div className={`border-2 border-dashed border-ink/20 hover:border-ink rounded-2xl p-8 text-center transition-all bg-canvas/30 flex flex-col items-center justify-center ${parsedResumes.length >= MAX_RESUMES ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
           <input
             type="file"
             id="batch-files"
             multiple
-            accept=".pdf,.docx,.doc,.txt"
+            accept=".pdf,.docx,.txt"
             onChange={handleFileUpload}
+            disabled={isProcessing || parsedResumes.length >= MAX_RESUMES}
             className="hidden"
           />
-          <label htmlFor="batch-files" className="cursor-pointer space-y-3 flex flex-col items-center">
+          <label htmlFor={parsedResumes.length >= MAX_RESUMES ? undefined : "batch-files"} className={`space-y-3 flex flex-col items-center ${parsedResumes.length >= MAX_RESUMES ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
             <div className="w-12 h-12 rounded-full bg-accent-lilac border border-ink flex items-center justify-center">
               <Upload className="w-6 h-6 text-ink" />
             </div>
             <div>
               <span className="font-sans font-bold text-sm text-ink block">
-                Select or drop multiple resumes (PDF / DOCX)
+                {parsedResumes.length >= MAX_RESUMES ? `Maximum capacity reached (${MAX_RESUMES} resumes)` : "Select or drop multiple resumes (PDF / DOCX / TXT)"}
               </span>
-              <span className="text-xs text-ink/60">Batch limit: up to 50 resumes at once</span>
+              <span className="text-xs text-ink/60">Limit: maximum {MAX_RESUMES} resumes per screening batch</span>
             </div>
           </label>
         </div>
 
-        {uploadStatus && (
-          <div className="p-3 bg-accent-yellow/30 border border-ink rounded-xl text-xs font-bold text-ink flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>{uploadStatus}</span>
+        {/* Real-time Progress Indicator */}
+        {isProcessing && currentProgress && (
+          <div className="p-4 bg-accent-yellow/20 border-2 border-ink rounded-2xl space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-ink">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-ink" />
+                <span>Processing Document ({currentProgress.current} / {currentProgress.total})</span>
+              </div>
+              <span className="font-mono">{Math.round((currentProgress.current / currentProgress.total) * 100)}%</span>
+            </div>
+            <div className="w-full bg-ink/10 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-accent-emerald h-full transition-all duration-300"
+                style={{ width: `${(currentProgress.current / currentProgress.total) * 100}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-ink/70 truncate font-mono">
+              Current: {currentProgress.filename}
+            </p>
+          </div>
+        )}
+
+        {/* Failed Uploads Section */}
+        {failedUploads.length > 0 && (
+          <div className="p-4 bg-accent-coral/10 border border-accent-coral/40 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-accent-coral uppercase tracking-wide flex items-center gap-1.5">
+                <XCircle className="w-4 h-4" />
+                <span>Parsing Failures ({failedUploads.length})</span>
+              </span>
+              <button
+                onClick={() => setFailedUploads([])}
+                className="text-[11px] text-ink/60 hover:text-ink font-semibold"
+              >
+                Clear errors
+              </button>
+            </div>
+            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+              {failedUploads.map((f, i) => (
+                <div key={i} className="text-xs flex items-start justify-between bg-canvas/60 p-2 rounded-lg border border-ink/10">
+                  <span className="font-semibold text-ink truncate mr-2">{f.filename}</span>
+                  <span className="text-ink/60 text-[11px] shrink-0">{f.reason}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -249,11 +348,15 @@ export default function RecruiterUploadPage() {
         <div className="space-y-3 pt-4 border-t border-ink/10">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-ink">
-              Ready for Screening ({parsedResumes.length})
+              Ready for Screening ({parsedResumes.length} / {MAX_RESUMES})
             </span>
             {parsedResumes.length > 0 && (
               <button
-                onClick={() => setParsedResumes([])}
+                onClick={() => {
+                  setParsedResumes([]);
+                  setFailedUploads([]);
+                  setUploadError(null);
+                }}
                 className="text-xs text-accent-coral font-bold hover:underline"
               >
                 Clear all

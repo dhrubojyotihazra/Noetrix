@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check, ArrowRight, Sparkles, CheckSquare, Square } from "lucide-react";
 import { DiffItem } from "@/lib/types";
 
@@ -80,11 +80,21 @@ export default function DiffPreviewModal({
     () => new Set(diffs.map((_, i) => i))
   );
 
+  // Re-initialize selectedIndices whenever modal opens or diffs change
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedIndices(new Set(diffs.map((_, i) => i)));
+    }
+  }, [isOpen, diffs]);
+
   if (!isOpen) return null;
 
-  // Calculate truthful gain
-  const computedGain = Math.max(0, Math.round((scoreAfter - scoreBefore) * 10) / 10);
-  const displayGain = gain > 0 ? gain : computedGain;
+  // Calculate dynamic gain based on currently selected diffs
+  const totalDiffs = diffs.length;
+  const selectedCount = selectedIndices.size;
+  const maxPossibleGain = gain > 0 ? gain : Math.max(0, Math.round((scoreAfter - scoreBefore) * 10) / 10);
+  const activeGain = totalDiffs > 0 ? Math.round((maxPossibleGain * (selectedCount / totalDiffs)) * 10) / 10 : 0;
+  const currentTailoredScore = Math.min(100, Math.round((scoreBefore + activeGain) * 10) / 10);
 
   const toggleIndex = (idx: number) => {
     const next = new Set(selectedIndices);
@@ -140,11 +150,11 @@ export default function DiffPreviewModal({
             <ArrowRight className="w-4 h-4 text-ink/50" />
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-ink/60">Tailored Score</span>
-              <div className="font-display text-xl text-accent-emerald font-bold">{scoreAfter}%</div>
+              <div className="font-display text-xl text-accent-emerald font-bold">{currentTailoredScore}%</div>
             </div>
           </div>
           <div className="bg-accent-emerald text-canvas font-sans text-xs font-bold px-3 py-1.5 rounded-full">
-            +{displayGain} pts Estimated Gain
+            +{activeGain} pts Estimated Gain
           </div>
         </div>
 
