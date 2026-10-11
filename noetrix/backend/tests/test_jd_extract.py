@@ -77,3 +77,57 @@ def test_extract_jd_keywords_drops_junk_ngrams():
     assert "docker" in kws
     assert "transformers" in kws
 
+
+def test_jd_parser_years_experience_with_intermediate_words():
+    """Verify years regex captures '1+ years practical experience' and '5+ years of software engineering experience'."""
+    jd1 = "We require 1+ years practical experience with Python."
+    res1 = parse_job_description(jd1)
+    assert res1.min_experience_years == 1.0
+
+    jd2 = "Requirements:\n- 5+ years of software engineering experience in backend systems."
+    res2 = parse_job_description(jd2)
+    assert res2.min_experience_years == 5.0
+
+
+def test_jd_parser_requirement_groups_and_familiarity():
+    """Verify 'X or Y' is treated as one requirement group and 'familiarity with' as nice-to-have."""
+    jd_text = """
+    Requirements:
+    - Strong proficiency in Python, FastAPI or Flask, and PostgreSQL
+    - Familiarity with AWS, Kubernetes, and Redis
+    """
+    res = parse_job_description(jd_text)
+    must_lower = [s.lower() for s in res.must_have_skills]
+    nice_lower = [s.lower() for s in res.nice_to_have_skills]
+
+    # 'fastapi or flask' should be one requirement group
+    assert any("fastapi or flask" in s or "flask or fastapi" in s for s in must_lower)
+    assert "python" in must_lower
+    assert "postgresql" in must_lower
+
+    # Familiarity skills must be in nice_to_have, not must_have
+    assert "aws" in nice_lower
+    assert "kubernetes" in nice_lower
+    assert "redis" in nice_lower
+    assert "aws" not in must_lower
+    assert "kubernetes" not in must_lower
+    assert "redis" not in must_lower
+
+
+def test_education_scorer_rewards_matching_education_required():
+    """Verify candidate receives small bonus when meeting JD education_required."""
+    from app.schemas.resume import ParsedResume, EduEntry
+    from app.schemas.jd import JDFeatures
+    from app.services.scorer.education_scorer import score_education
+
+    resume = ParsedResume(
+        education=[EduEntry(degree="Bachelor of Science in Computer Science")]
+    )
+    jd_with_req = JDFeatures(education_required="Bachelor")
+    jd_without_req = JDFeatures(education_required="")
+
+    score_with = score_education(resume, jd_with_req)
+    score_without = score_education(resume, jd_without_req)
+
+    assert score_with.score == score_without.score + 5.0
+

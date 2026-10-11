@@ -1,4 +1,4 @@
-"""Placement-weighted keyword matching with synonym tolerance and frequency boost."""
+"""Placement-weighted keyword matching with synonym tolerance."""
 
 from app.schemas.scoring import MetricScore
 from app.schemas.resume import ParsedResume
@@ -10,14 +10,15 @@ from app.nlp.synonyms import get_synonyms, normalize_term
 def score_keywords(resume: ParsedResume, jd: JDFeatures, weight: float = 0.30) -> tuple[MetricScore, list[str], list[str]]:
     """Compute placement-weighted keyword score against JD requirements."""
     jd_skills = jd.must_have_skills + jd.nice_to_have_skills + jd.keywords
-    # Deduplicate while preserving order
+    # Deduplicate while preserving order, expanding 'or' requirement groups
     unique_jd_skills = []
     seen = set()
     for s in jd_skills:
-        clean = s.strip().lower()
-        if clean and clean not in seen:
-            seen.add(clean)
-            unique_jd_skills.append(clean)
+        options = [sub.strip().lower() for sub in s.split(" or ")] if " or " in s else [s.strip().lower()]
+        for clean in options:
+            if clean and clean not in seen:
+                seen.add(clean)
+                unique_jd_skills.append(clean)
 
     if not unique_jd_skills:
         return MetricScore(

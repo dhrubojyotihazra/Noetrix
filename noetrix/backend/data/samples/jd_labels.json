@@ -3,7 +3,7 @@
     "id": "jd_01",
     "title": "Associate / Junior ML Engineer - AI Platforms",
     "text": "Associate / Junior Machine Learning Engineer (AI Platforms)\nWe are seeking a Junior ML Engineer to join our AI Platform team. Requirements:\n- Bachelor's degree in Computer Science, Data Science, or related field\n- 1+ years practical experience with Python, PyTorch, Scikit-Learn, and SQL\n- Hands-on familiarity with Docker and building REST APIs using FastAPI or Flask\n- Strong foundation in machine learning pipelines, data processing with Pandas and NumPy\nNice to have:\n- Experience with Hugging Face transformers, CI/CD pipelines, or cloud deployment\nResponsibilities:\n- Assist in training and evaluating baseline predictive models\n- Package ML models into containerized microservices for batch and real-time inference",
-    "expected_must_have_skills": ["python", "pytorch", "scikit-learn", "sql", "docker", "fastapi", "pandas", "numpy"],
+    "expected_must_have_skills": ["python", "pytorch", "scikit-learn", "sql", "fastapi or flask", "machine learning", "pandas", "numpy"],
     "expected_min_experience_years": 1.0,
     "expected_education": "Bachelor"
   },
@@ -43,7 +43,7 @@
     "id": "jd_06",
     "title": "NLP & LLM Systems Engineer",
     "text": "NLP Systems Engineer\nRequirements:\n- 2+ years experience in Natural Language Processing and Generative AI\n- Deep proficiency with Python, Transformers, PyTorch, and LangChain\n- Experience fine-tuning open-source LLMs and building RAG pipelines\n- Familiarity with Vector Databases (ChromaDB, Pinecone) and FastAPI",
-    "expected_must_have_skills": ["nlp", "transformers", "pytorch", "langchain", "python", "fastapi"],
+    "expected_must_have_skills": ["nlp", "transformers", "pytorch", "langchain", "python", "generative ai"],
     "expected_min_experience_years": 2.0,
     "expected_education": ""
   }

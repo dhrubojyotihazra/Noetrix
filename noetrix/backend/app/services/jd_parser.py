@@ -14,14 +14,47 @@ def parse_job_description(raw_text: str, title: str | None = None) -> JDFeatures
     # Extract keywords
     extracted_keywords = extract_jd_keywords(raw_text, top_n=25)
 
-    # Detect minimum experience years (e.g. "5+ years of experience", "minimum 3 years")
+    # Detect minimum experience years (allow up to 3 words between 'years' and 'experience')
     min_years = 0.0
-    exp_matches = re.findall(r"(\d+)\+?\s*(?:to\s*\d+\s*)?years?(?:\s+of)?(?:\s+relevant)?\s+experience", raw_text, re.IGNORECASE)
+    exp_matches = re.findall(r"(\d+)\+?(?:\s*(?:to|-)\s*\d+)?\s*years?(?:\s+\w+){0,3}?\s+experience", raw_text, re.IGNORECASE)
     if exp_matches:
         try:
             min_years = float(exp_matches[0])
         except Exception:
             pass
+
+    # Helper to group "X or Y" skills
+    def group_or_skills(text: str, skills: list[str]) -> list[str]:
+        if len(skills) < 2:
+            return skills
+        grouped = []
+        skip = set()
+        lower_t = text.lower()
+        for i, s1 in enumerate(skills):
+            if s1 in skip:
+                continue
+            paired = False
+            for j in range(i + 1, len(skills)):
+                s2 = skills[j]
+                if s2 in skip:
+                    continue
+                pat1 = rf"\b{re.escape(s1)}\b\s+(?:or|/)\s+\b{re.escape(s2)}\b"
+                pat2 = rf"\b{re.escape(s2)}\b\s+(?:or|/)\s+\b{re.escape(s1)}\b"
+                if re.search(pat1, lower_t):
+                    grouped.append(f"{s1} or {s2}")
+                    skip.add(s1)
+                    skip.add(s2)
+                    paired = True
+                    break
+                elif re.search(pat2, lower_t):
+                    grouped.append(f"{s2} or {s1}")
+                    skip.add(s1)
+                    skip.add(s2)
+                    paired = True
+                    break
+            if not paired and s1 not in skip:
+                grouped.append(s1)
+        return grouped
 
     # Segregate must-have vs nice-to-have skills
     must_haves: set[str] = set()
@@ -45,13 +78,26 @@ def parse_job_description(raw_text: str, title: str | None = None) -> JDFeatures
             if line.startswith(("-", "•", "*")):
                 responsibilities.append(line.lstrip("-•* ").strip())
 
-        # Match skills in this line
-        for skill in ALL_TAXONOMY_SKILLS:
-            if word_boundary_match(skill, lower_line):
-                if current_mode == "must_have":
-                    must_haves.add(skill)
-                elif current_mode == "nice_to_have":
-                    nice_to_haves.add(skill)
+        # Check for clauses or sub-sections on this line
+        line_is_familiarity = any(f in lower_line for f in ["familiarity with", "familiar with", "exposure to"])
+        clauses = re.split(r"\s+and\s+(?=(?:building|developing|scaling|designing|architecting|implementing|maintaining)\b)", line, flags=re.IGNORECASE)
+
+        for clause in clauses:
+            lower_clause = clause.lower()
+            clause_is_fam = any(f in lower_clause for f in ["familiarity with", "familiar with", "exposure to"])
+            mode = "nice_to_have" if (clause_is_fam or (line_is_familiarity and len(clauses) == 1)) else current_mode
+
+            clause_skills = [
+                skill for skill in ALL_TAXONOMY_SKILLS
+                if word_boundary_match(skill, lower_clause)
+            ]
+            clause_grouped = group_or_skills(lower_clause, clause_skills)
+
+            for s in clause_grouped:
+                if mode == "must_have":
+                    must_haves.add(s)
+                elif mode == "nice_to_have":
+                    nice_to_haves.add(s)
 
     from app.nlp.tfidf import GENERIC_NON_SKILLS
 

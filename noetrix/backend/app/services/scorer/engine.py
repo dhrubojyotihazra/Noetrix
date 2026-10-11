@@ -66,13 +66,22 @@ def score_resume_against_jd(
         def has_outside_evidence(skill: str) -> bool:
             return any(word_boundary_match(syn, outside_skills_text) for syn in get_synonyms(skill))
 
+        def is_must_have_satisfied(skill: str) -> bool:
+            if " or " in skill:
+                sub_skills = [sub.strip() for sub in skill.split(" or ")]
+                return any(
+                    any(m.lower() == sub.lower() for m in matched_kws) and has_outside_evidence(sub)
+                    for sub in sub_skills
+                )
+            return any(m.lower() == skill.lower() for m in matched_kws) and has_outside_evidence(skill)
+
         matched_must_haves = [
             s for s in jd.must_have_skills
-            if any(m.lower() == s.lower() for m in matched_kws) and has_outside_evidence(s)
+            if is_must_have_satisfied(s)
         ]
         missing_must_haves = [
             s for s in jd.must_have_skills
-            if not (any(m.lower() == s.lower() for m in matched_kws) and has_outside_evidence(s))
+            if not is_must_have_satisfied(s)
         ]
         coverage_ratio = len(matched_must_haves) / len(jd.must_have_skills) if jd.must_have_skills else 1.0
 

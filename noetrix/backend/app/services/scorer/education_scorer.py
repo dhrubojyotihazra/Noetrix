@@ -41,18 +41,30 @@ def score_education(resume: ParsedResume, jd: JDFeatures, weight: float = 0.10) 
                 best_score = score
                 highest_degree = label
 
-    # Bonus for relevant certifications (+10 pts)
+    # Bonus for relevant certifications (+5 pts per cert, max +15)
     cert_count = len(resume.certifications)
     if cert_count > 0:
         best_score = min(100.0, best_score + min(15.0, cert_count * 5.0))
-
-    score_val = round(best_score, 1)
 
     evidence = [
         f"Highest educational qualification recognized: {highest_degree}.",
     ]
     if cert_count > 0:
         evidence.append(f"Detected {cert_count} professional credentials/certifications.")
+
+    # Small bonus (+5 pts) if candidate meets or exceeds the required education level in the JD
+    if jd and getattr(jd, "education_required", ""):
+        req_deg = jd.education_required.lower()
+        req_threshold = 40.0
+        for marker, (score, label) in DEGREE_HIERARCHY.items():
+            if marker in req_deg:
+                req_threshold = score
+                break
+        if best_score >= req_threshold:
+            best_score = min(100.0, best_score + 5.0)
+            evidence.append(f"Meets or exceeds JD education requirement ({jd.education_required}).")
+
+    score_val = round(best_score, 1)
 
     missing = []
     if best_score < 75.0:
