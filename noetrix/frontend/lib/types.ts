@@ -148,3 +148,12 @@ export interface TailorResumeResponse {
   estimated_score_after: number;
   estimated_gain: number;
 }
+
+export interface Explanation {
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  fixes: string[];
+  generated_by: string;
+}
+

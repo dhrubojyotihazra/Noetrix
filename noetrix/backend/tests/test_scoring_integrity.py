@@ -158,3 +158,28 @@ def test_estimate_years_of_experience_respects_reference_date_and_env(monkeypatc
     assert tenure_2028 == 8.1, f"Expected 8.1 years in 2028, got {tenure_2028}"
 
 
+def test_explain_endpoint_returns_grounded_explanation(sample_data):
+    """Test that /api/explain returns a grounded explanation with generated_by metadata."""
+    from fastapi.testclient import TestClient
+    from app.main import app
+
+    resume, jd = sample_data
+    client = TestClient(app)
+    resp = client.post(
+        "/api/explain",
+        json={
+            "resume": resume.model_dump(),
+            "jd": jd.model_dump(),
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "summary" in data and len(data["summary"]) > 0
+    assert "strengths" in data
+    assert "gaps" in data
+    assert "fixes" in data
+    assert "generated_by" in data
+    assert data["generated_by"] in ["rules", "llm"]
+
+
+

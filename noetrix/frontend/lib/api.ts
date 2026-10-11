@@ -6,9 +6,11 @@ import {
   ScoringConfig,
   EnhanceBulletResponse,
   TailorResumeResponse,
+  Explanation,
 } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 
 export async function parseResumeFile(file: File): Promise<ParsedResume> {
   const formData = new FormData();
@@ -56,6 +58,25 @@ export async function scoreResume(
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Failed to score resume" }));
     throw new Error(err.detail || "Failed to score resume");
+  }
+
+  return res.json();
+}
+
+export async function explainScore(
+  resume: ParsedResume,
+  jd: JDFeatures,
+  config?: ScoringConfig
+): Promise<Explanation> {
+  const res = await fetch(`${BASE_URL}/api/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resume, jd, config }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to generate explanation" }));
+    throw new Error(err.detail || "Failed to generate explanation");
   }
 
   return res.json();
