@@ -75,6 +75,12 @@ npm run dev
    - `NEXT_PUBLIC_API_URL` = `https://noetrix-api.onrender.com`
 4. Deploy! Next.js will build and serve your app globally.
 
+### ⚠️ Render Free-Tier Memory Advisory (Sentence-Transformers)
+Render's free tier provides a 512 MB RAM ceiling. Initializing PyTorch with `sentence-transformers` (`all-MiniLM-L6-v2`) requires ~350MB–450MB resident memory, which approaches the container limit under concurrent requests. Noetrix mitigates this through two safeguards:
+1. **Lazy Initialization:** Transformer weights are loaded on first evaluation rather than during initial process startup (`app/nlp/embeddings.py`).
+2. **Deterministic TF-IDF Fallback:** If memory allocation fails or `sentence-transformers` is unavailable, `compute_semantic_similarity` automatically falls back to calibrated sublinear TF-IDF n-gram cosine matching, maintaining 100% backend availability without crashing.
+
+
 ---
 
 ## ⚖️ Legal & Compliance Note
