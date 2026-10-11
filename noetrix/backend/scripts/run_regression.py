@@ -179,18 +179,20 @@ def build_bulk_cvs() -> list[ParsedResume]:
     """Generate 30 bulk candidate CV profiles spanning realistic variations."""
     bulk = []
     
-    # Check if local PDF files exist in Desktop 'Resumes and CVs'
-    desktop_cv_dir = Path("c:/Users/HP/Desktop/dhruv/Resumes and CVs")
-    if desktop_cv_dir.exists():
-        pdf_files = list(desktop_cv_dir.glob("*.pdf"))
-        for p in pdf_files:
-            try:
-                with open(p, "rb") as f:
-                    parsed = parse_pdf_bytes(f.read(), filename=p.name)
-                    if parsed and len(parsed.skills) > 0:
-                        bulk.append(parsed)
-            except Exception:
-                pass
+    # Check if optional bulk CVs directory is provided via environment variable
+    custom_cv_dir = os.environ.get("BULK_RESUMES_DIR")
+    if custom_cv_dir:
+        cv_dir_path = Path(custom_cv_dir)
+        if cv_dir_path.exists():
+            pdf_files = list(cv_dir_path.glob("*.pdf"))
+            for p in pdf_files:
+                try:
+                    with open(p, "rb") as f:
+                        parsed = parse_pdf_bytes(f.read(), filename=p.name)
+                        if parsed and len(parsed.skills) > 0:
+                            bulk.append(parsed)
+                except Exception:
+                    pass
 
     # Ensure we reach exactly 30 bulk CVs by generating structured profile variations
     names = [
@@ -264,15 +266,16 @@ def run_regression_suite():
     samples = build_canonical_sample_cvs()
     bulk = build_bulk_cvs()
 
-    # Pre-calibrated baselines for the 6 canonical samples
-    # Under old buggy baseline:
-    # - Must-have cap falsely capped any CV missing 1 skill to 50.0
-    # - Semantic was raw unscaled cosine * 100
+    # HISTORIC UNCALIBRATED BASELINES:
+    # Retained for regression auditing to document fixes from the original uncalibrated baseline.
+    # Original bugs:
+    # - Must-have cap falsely capped any CV missing even a single skill to 50.0
+    # - Semantic was unscaled raw cosine * 100
     # - Impact counted wrapped lines
-    old_baselines = {
-        "cv_01_strong_ml_engineer.json": 50.0,    # Falsely capped at 50
+    HISTORIC_UNCALIBRATED_BASELINES = {
+        "cv_01_strong_ml_engineer.json": 50.0,    # Falsely capped at 50 in old engine
         "cv_02_junior_data_analyst.json": 46.2,
-        "cv_03_senior_backend_dev.json": 50.0,    # Falsely capped at 50
+        "cv_03_senior_backend_dev.json": 50.0,    # Falsely capped at 50 in old engine
         "cv_04_keyword_stuffer.json": 34.1,
         "cv_05_missing_education.json": 41.5,
         "cv_06_non_technical.json": 18.5,
@@ -281,16 +284,16 @@ def run_regression_suite():
     print("-" * 85)
     print(f"{'PART 1: 6 CANONICAL ARCHETYPE CVs':^85}")
     print("-" * 85)
-    print(f"{'CANDIDATE / PROFILE':<32} | {'OLD SCORE':<10} | {'NEW SCORE':<10} | {'DELTA':<8} | {'BAND':<10} | {'CAPPED?'}")
+    print(f"{'CANDIDATE / PROFILE':<32} | {'HISTORIC BASELINE':<18} | {'CALIBRATED SCORE':<16} | {'DELTA':<8} | {'BAND':<10} | {'CAPPED?'}")
     print("-" * 85)
 
     for cv in samples:
         res = score_resume_against_jd(cv, jd)
-        old = old_baselines.get(cv.filename, 50.0)
+        old = HISTORIC_UNCALIBRATED_BASELINES.get(cv.filename, 50.0)
         delta = res.overall_score - old
         sign = "+" if delta >= 0 else ""
         capped_str = "YES (Cap 50)" if res.is_capped else "No"
-        print(f"{cv.filename[:32]:<32} | {old:>8.1f}% | {res.overall_score:>8.1f}% | {sign}{delta:>6.1f}% | {res.match_band:<10} | {capped_str}")
+        print(f"{cv.filename[:32]:<32} | {old:>16.1f}% | {res.overall_score:>14.1f}% | {sign}{delta:>6.1f}% | {res.match_band:<10} | {capped_str}")
 
     print("\n" + "-" * 85)
     print(f"{'PART 2: 30 BULK CANDIDATE CVs BATCH AUDIT':^85}")
@@ -322,6 +325,49 @@ def run_regression_suite():
     print("-" * 85)
     print(f"BATCH SUMMARY -> Total CVs: {len(bulk)} | Strong: {strong_count} | Moderate: {mod_count} | Weak: {weak_count}")
     print("=" * 85 + "\n")
+
+    # Real Assertions: Validate expected rank order and match bands across archetypes
+    scores = {cv.filename: score_resume_against_jd(cv, jd) for cv in samples}
+
+    # 1. Strong ML Engineer must rank #1 with match band 'strong' (score >= 75.0) and not be capped
+    ml_score = scores["cv_01_strong_ml_engineer.json"]
+    assert ml_score.match_band == "strong", f"Strong ML engineer must have band 'strong', got {ml_score.match_band}"
+    assert ml_score.overall_score >= 75.0, f"Strong ML engineer must score >= 75.0, got {ml_score.overall_score}"
+    assert not ml_score.is_capped, "Strong ML engineer must not be capped"
+
+    # 2. Strong ML Engineer must score strictly higher than all other archetypes
+    for fname, other_score in scores.items():
+        if fname != "cv_01_strong_ml_engineer.json":
+            assert ml_score.overall_score > other_score.overall_score, (
+                f"Strong ML engineer ({ml_score.overall_score}) must outrank {fname} ({other_score.overall_score})"
+            )
+
+    # 3. Non-Technical Profile must score lowest and be in 'weak' band
+    non_tech = scores["cv_06_non_technical.json"]
+    assert non_tech.match_band == "weak", f"Non-technical profile must be 'weak', got {non_tech.match_band}"
+    for fname, other_score in scores.items():
+        if fname != "cv_06_non_technical.json":
+            assert non_tech.overall_score < other_score.overall_score, (
+                f"Non-technical CV ({non_tech.overall_score}) must have lowest score, but {fname} scored {other_score.overall_score}"
+            )
+
+    # 4. Keyword Stuffer must score in 'weak' band (< 50.0)
+    stuffer = scores["cv_04_keyword_stuffer.json"]
+    assert stuffer.match_band == "weak", f"Keyword stuffer must be in 'weak' band, got {stuffer.match_band}"
+    assert stuffer.overall_score < 50.0, f"Keyword stuffer must be below 50.0, got {stuffer.overall_score}"
+
+    # 5. Capped Archetypes must have band 'weak' and overall_score == 50.0
+    for capped_fname in ["cv_02_junior_data_analyst.json", "cv_03_senior_backend_dev.json", "cv_05_missing_education.json"]:
+        c_score = scores[capped_fname]
+        assert c_score.is_capped is True, f"{capped_fname} must trigger must-have cap"
+        assert c_score.match_band == "weak", f"{capped_fname} must have band 'weak'"
+        assert c_score.overall_score == 50.0, f"{capped_fname} score must be capped at 50.0"
+
+    # 6. Bulk batch count must be exactly 30
+    assert len(bulk) == 30, f"Expected exactly 30 bulk CVs, got {len(bulk)}"
+
+    print("ALL REGRESSION ASSERTIONS PASSED SUCCESSFULLY!")
+
 
 
 if __name__ == "__main__":
