@@ -9,7 +9,7 @@ import {
   Explanation,
 } from "./types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 
 
 export async function parseResumeFile(file: File): Promise<ParsedResume> {
