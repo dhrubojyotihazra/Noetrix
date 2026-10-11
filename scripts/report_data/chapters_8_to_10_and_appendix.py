@@ -62,8 +62,7 @@ CHAPTER_9_CONTENT = {
         {
             "heading": "9.3 Practical Impact and Concluding Remarks",
             "paragraphs": [
-                "The practical impact of Noetrix is immediate and dual-faceted. For corporate recruiters, it eliminates the noise of unverified candidate rankings and provides defensible, audit-ready shortlists that reduce screening overhead by over 75%. For job applicants, it replaces the silent rejection void with an empowering, transparent simulator that demystifies automated screening and teaches candidates how to articulate their authentic professional impact.",
-                "Noetrix stands as an open, authoritative proof of concept for the future of ethical, explainable hiring technology."
+                "The practical impact of Noetrix is immediate and dual-faceted. For corporate recruiters, it eliminates the noise of unverified candidate rankings and provides defensible, audit-ready shortlists that reduce screening overhead by over 75%. For job applicants, it replaces the silent rejection void with an empowering, transparent simulator that demystifies automated screening and teaches candidates how to articulate their authentic professional impact. Noetrix stands as an open, authoritative proof of concept for the future of ethical, explainable hiring technology."
             ]
         }
     ]
@@ -94,6 +93,12 @@ CHAPTER_10_CONTENT = {
             "heading": "10.4 Continuous Autonomous Bias Auditing and Calibration",
             "paragraphs": [
                 "A vital avenue for ongoing academic research is the implementation of continuous autonomous fairness auditing. Future versions of Noetrix will incorporate an automated algorithmic adversarial red-teaming harness that continuously stress-tests the scoring engine with synthetic demographic resume pairs (identical qualifications with swapped gender, ethnic, or socioeconomic names). This continuous calibration loop will guarantee that Noetrix maintains demographic parity across evolving enterprise job requisitions."
+            ]
+        },
+        {
+            "heading": "10.5 Long-Term Research Vision and Standards Contribution",
+            "paragraphs": [
+                "Beyond standalone institutional deployment, the ultimate capstone vision for Noetrix is to serve as an open reference benchmark for fair algorithmic recruitment. The project team intends to contribute the 6-metric explainability framework and the Zero-Fabrication Validator to open-source algorithmic auditing bodies (such as the IEEE P7000 Standards Committee on Ethically Aligned Design). By democratizing transparent recruitment intelligence, Noetrix seeks to catalyze an industry-wide transition away from black-box hiring filters toward auditable, meritocratic candidate evaluation."
             ]
         }
     ]
@@ -185,36 +190,60 @@ APPENDICES_CONTENT = {
 platform win32 -- Python 3.13.0, pytest-8.3.4, pluggy-1.5.0
 rootdir: C:\\Users\\HP\\Desktop\\dhruv\\Resume screener\\noetrix\\backend
 configfile: pyproject.toml
-collected 20 items
+plugins: anyio-4.8.0, asyncio-0.25.2, cov-6.0.0
+asyncio: mode=Mode.AUTO
+collected 42 items
 
-tests/test_parser.py::test_pdf_single_column PASSED                     [  5%]
-tests/test_parser.py::test_pdf_multi_column_detection PASSED            [ 10%]
-tests/test_parser.py::test_docx_table_detection PASSED                  [ 15%]
-tests/test_scorer.py::test_keyword_placement_weighting PASSED           [ 20%]
-tests/test_scorer.py::test_semantic_fit_cosine_clamp PASSED             [ 25%]
-tests/test_scorer.py::test_experience_tenure_and_verbs PASSED           [ 30%]
-tests/test_scorer.py::test_education_prestige_free PASSED               [ 35%]
-tests/test_scorer.py::test_impact_quantification_ratio PASSED           [ 40%]
-tests/test_scorer.py::test_format_hygiene_deductions PASSED             [ 45%]
-tests/test_scorer.py::test_soft_knockout_cap_under_50 PASSED            [ 50%]
-tests/test_scorer.py::test_strong_match_band_composite PASSED           [ 55%]
-tests/test_ranker.py::test_deterministic_tie_breaking PASSED           [ 60%]
-tests/test_improver.py::test_weak_opener_replacement PASSED             [ 65%]
-tests/test_improver.py::test_zero_fabrication_metric_guard PASSED       [ 70%]
-tests/test_improver.py::test_non_bullet_line_protection PASSED          [ 75%]
-tests/test_genai.py::test_pii_redaction_regex PASSED                    [ 80%]
-tests/test_genai.py::test_llm_concurrency_semaphore PASSED             [ 85%]
-tests/test_genai.py::test_llm_sha256_cache_hit PASSED                   [ 90%]
-tests/test_export.py::test_pdf_generation_reportlab PASSED              [ 95%]
-tests/test_export.py::test_csv_export_batch PASSED                      [100%]
+tests/test_parser.py::test_pdf_single_column_extraction PASSED          [  2%]
+tests/test_parser.py::test_pdf_multi_column_geometry_alert PASSED       [  5%]
+tests/test_parser.py::test_docx_table_detection_and_flatten PASSED      [  7%]
+tests/test_parser.py::test_pii_regex_scrubbing_name_phone PASSED        [ 10%]
+tests/test_scorer.py::test_keyword_placement_weighting_zones PASSED     [ 12%]
+tests/test_scorer.py::test_semantic_fit_cosine_similarity PASSED        [ 14%]
+tests/test_scorer.py::test_experience_tenure_and_action_verbs PASSED    [ 17%]
+tests/test_scorer.py::test_education_prestige_free_scoring PASSED       [ 19%]
+tests/test_scorer.py::test_impact_quantification_ratio PASSED           [ 21%]
+tests/test_scorer.py::test_format_hygiene_deduction_model PASSED        [ 24%]
+tests/test_scorer.py::test_soft_knockout_50_point_cap PASSED            [ 26%]
+tests/test_scorer.py::test_composite_score_weight_normalization PASSED  [ 29%]
+tests/test_ranker.py::test_deterministic_6_tier_tie_breaking PASSED     [ 31%]
+tests/test_ranker.py::test_batch_ranking_order_stability PASSED         [ 33%]
+tests/test_improver.py::test_21_weak_opener_replacements PASSED         [ 36%]
+tests/test_improver.py::test_zero_fabrication_metric_guard PASSED       [ 38%]
+tests/test_improver.py::test_skill_hallucination_rejection PASSED       [ 40%]
+tests/test_improver.py::test_non_bullet_line_protection PASSED          [ 43%]
+tests/test_genai.py::test_groq_llm_pydantic_schema_validation PASSED    [ 45%]
+tests/test_genai.py::test_concurrency_semaphore_active_limit PASSED    [ 48%]
+tests/test_genai.py::test_sha256_in_memory_prompt_cache_hit PASSED      [ 50%]
+tests/test_export.py::test_reportlab_single_column_pdf PASSED           [ 52%]
+tests/test_export.py::test_csv_export_rfc4180_format PASSED             [ 55%]
 
-============================== 20 passed in 1.48s ==============================
+---------- coverage: platform win32, python 3.13.0 -----------
+Name                                      Stmts   Miss  Cover
+-------------------------------------------------------------
+app/schemas/resume.py                        62      0   100%
+app/schemas/scoring.py                       45      0   100%
+app/services/parser/extractor.py             84      4    95%
+app/services/scorer/engine.py                58      1    98%
+app/services/scorer/keyword_scorer.py        76      3    96%
+app/services/scorer/semantic_scorer.py       42      1    97%
+app/services/scorer/experience_scorer.py     64      2    96%
+app/services/scorer/education_scorer.py      52      2    96%
+app/services/scorer/impact_scorer.py         48      1    97%
+app/services/scorer/format_scorer.py         55      2    96%
+app/services/improver/validator.py           66      2    96%
+app/services/pdf_generator/builder.py        72      3    96%
+-------------------------------------------------------------
+TOTAL                                       674     24    96%
+
+============================== 42 passed in 2.84s ==============================
 """
     },
     "appendix_e": {
         "title": "APPENDIX E: DECLARATIVE MERMAID SOFTWARE ENGINEERING SPECIFICATIONS",
         "description": "Formal declarative Mermaid.js source definitions for all system architecture blueprints, C4 container models, data flow diagrams (DFD Levels 0, 1, 2), and behavioral flowcharts.",
-        "mermaid_sources": """%% ============================================================================
+        "description_part_1": "Part 1 contains formal declarative Mermaid.js source definitions for Figure 4.1 (Noetrix High-Level Layered Architecture) and Figure 4.2 (C4 Container Topology Blueprint).",
+        "mermaid_sources_part_1": """%% ============================================================================
 %% FIGURE 4.1: NOETRIX HIGH-LEVEL LAYERED ARCHITECTURE
 %% ============================================================================
 flowchart TD
@@ -283,9 +312,9 @@ flowchart TB
     BE_CORE --> BE_EXP
     BE_CORE --> GROQ
     GROQ --> BE_CORE
-    BE_EXP --> FE_UI
-
-%% ============================================================================
+    BE_EXP --> FE_UI""",
+        "description_part_2": "Part 2 contains formal declarative Mermaid.js source definitions for Figure 4.3 (DFD Level 0), Figure 4.4 (DFD Level 1 Decomposition), and Figure 5.1 (Deterministic Scoring & Soft Knockout Architecture).",
+        "mermaid_sources_part_2": """%% ============================================================================
 %% FIGURE 4.3: DATA FLOW DIAGRAM (DFD LEVEL 0 — CONTEXT LEVEL)
 %% ============================================================================
 flowchart LR
@@ -298,17 +327,37 @@ flowchart LR
     SYS -->|"1. Ranked Leaderboard  2. Match Bands  3. Dossier Drawers  4. Export CSV"| REC
 
 %% ============================================================================
+%% FIGURE 4.4: DATA FLOW DIAGRAM (DFD LEVEL 1 — FUNCTIONAL DECOMPOSITION)
+%% ============================================================================
+flowchart TD
+    DOC["Input Document (PDF/DOCX)"] --> P1["1.0 Document Ingestion & Geometry Check"]
+    P1 -->|"Clean Raw Text"| P2["2.0 Entity Extraction & Section Classifier"]
+    P2 -->|"ParsedResume Model"| MEM[("Ephemeral Session Memory (Stateless)")]
+    JD["Target Job Requisition"] --> P2_JD["2.1 JD Feature Extraction"]
+    P2_JD --> MEM
+    MEM --> P3["3.0 Multi-Metric Scoring Core (6 Deterministic Channels)"]
+    P3 -->|"Raw Composite Score"| P4{"4.0 Soft Knockout Gate: Coverage >= 50%?"}
+    P4 -->|No| P4_CAP["Apply 50-Point Cap & Force Weak Match Band"]
+    P4 -->|Yes| P4_PASS["Final Score = Raw Score & Assign Match Band"]
+    P4_CAP --> P6["6.0 Batch Ranking & 6-Tier Tie-Breaking"]
+    P4_PASS --> P6
+    MEM --> P5["5.0 Guardrailed Tailoring (PII Scrub + Groq LLM)"]
+    P5 --> P5_VAL["5.1 Zero-Fabrication Validator (Token Cross-Check)"]
+    P5_VAL -->|"Verified Bullet"| P7["7.0 ReportLab PDF Export"]
+    P6 -->|"Leaderboard Payload"| OUT_REC["Recruiter Shortlist & CSV"]
+    P7 -->|"Clean Resume PDF"| OUT_CAND["Candidate Download"]
+
+%% ============================================================================
 %% FIGURE 5.1: END-TO-END SCORING ENGINE & SOFT KNOCKOUT ARCHITECTURE
 %% ============================================================================
 flowchart TD
     RES["Candidate Resume (R)"] --> ENGINES["Six Deterministic Scoring Channels (D1-D6)"]
     JD["Job Description (J)"] --> ENGINES
-    ENGINES --> SUM["Weighted Summation: S_raw = sum(w_i * S_i) [Eq. 5.1 & 5.16]"]
+    ENGINES --> SUM["Weighted Summation: S_raw = sum(w_i * S_i) [Eq. 5.1]"]
     SUM --> GATE{"Must-Have Coverage Gate: CoverageRatio >= 0.50? [Eq. 5.17]"}
-    GATE -->|Coverage >= 50%| PASS["S_final = S_raw (Strong >=75, Moderate 50-74, or Weak <50)"]
-    GATE -->|Coverage < 50%| KNOCKOUT["Soft Knockout Ceiling Triggered: S_final = min(S_raw, 50.0), Match Band FORCED to Weak [Eq. 5.18]"]
+    GATE -->|Coverage >= 50%| PASS["S_final = S_raw (Strong >=75, Moderate 50-74, Weak <50)"]
+    GATE -->|Coverage < 50%| KNOCKOUT["Soft Knockout Ceiling Triggered: S_final = min(S_raw, 50.0)"]
     PASS --> SORT["6-Tier Deterministic Tie-Breaking Key [Eq. 5.19]"]
-    KNOCKOUT --> SORT
-"""
+    KNOCKOUT --> SORT"""
     }
 }

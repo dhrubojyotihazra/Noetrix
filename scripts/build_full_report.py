@@ -434,10 +434,12 @@ h1.chapter-title {
   text-align: center;
   text-transform: uppercase;
   margin-top: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   color: #0b1c2d;
   border-bottom: 2px solid #0b1c2d;
   padding-bottom: 6px;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 h2.section-heading {
@@ -529,15 +531,26 @@ pre.code-block {
   background-color: #f8fafc;
   border: 1px solid #cbd5e1;
   border-left: 4px solid #0284c7;
-  padding: 10px;
+  padding: 8px 10px;
   font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 9.5pt;
-  line-height: 1.35;
+  font-size: 8.5pt;
+  line-height: 1.28;
   overflow-x: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
+  margin-top: 6px;
+}
+
+p.appendix-desc {
+  font-style: italic;
+  font-size: 9.5pt;
+  color: #1e406b;
+  margin-top: 2px;
+  margin-bottom: 6px;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 .callout-box {
@@ -799,6 +812,8 @@ pre.code-block {
 <h1 class="chapter-title">{ch_data["title"]}</h1>
 """)
         for sec in ch_data["sections"]:
+            if sec.get("page_break_before"):
+                html.append('<div class="page-break"></div>\n')
             html.append(f"""
 <h2 class="section-heading">{sec["heading"]}</h2>
 """)
@@ -858,11 +873,11 @@ pre.code-block {
     html.append("""
 <div class="page-break"></div>
 <h1 class="chapter-title">REFERENCES</h1>
-<div style="margin-top: 25px; line-height: 1.6;">
+<div style="margin-top: 14px; line-height: 1.30; font-size: 9.0pt;">
 """)
     for ref in REFERENCES_LIST:
         html.append(f"""
-  <p style="padding-left: 30px; text-indent: -30px;">
+  <p style="padding-left: 28px; text-indent: -28px; margin-bottom: 5px;">
     <strong>{ref["id"]}</strong> {ref["citation"]}
   </p>
 """)
@@ -874,40 +889,48 @@ pre.code-block {
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">{app["appendix_a"]["title"]}</h1>
-<p><em>{app["appendix_a"]["description"]}</em></p>
-<pre class="code-block">{get_code_snippet(app["appendix_a"]["file_path"], 90)}</pre>
+<p class="appendix-desc">{app["appendix_a"]["description"]}</p>
+<pre class="code-block">{get_code_snippet(app["appendix_a"]["file_path"], 52)}</pre>
 """)
 
     # Appendix B
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">{app["appendix_b"]["title"]}</h1>
-<p><em>{app["appendix_b"]["description"]}</em></p>
-<pre class="code-block">{get_code_snippet(app["appendix_b"]["file_path"], 90)}</pre>
+<p class="appendix-desc">{app["appendix_b"]["description"]}</p>
+<pre class="code-block">{get_code_snippet(app["appendix_b"]["file_path"], 52)}</pre>
 """)
 
     # Appendix C
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">{app["appendix_c"]["title"]}</h1>
-<p><em>{app["appendix_c"]["description"]}</em></p>
-<pre class="code-block">{get_code_snippet(app["appendix_c"]["file_path"], 85)}</pre>
+<p class="appendix-desc">{app["appendix_c"]["description"]}</p>
+<pre class="code-block">{get_code_snippet(app["appendix_c"]["file_path"], 50)}</pre>
 """)
 
     # Appendix D
     html.append(f"""
 <div class="page-break"></div>
 <h1 class="chapter-title">{app["appendix_d"]["title"]}</h1>
-<p><em>{app["appendix_d"]["description"]}</em></p>
+<p class="appendix-desc">{app["appendix_d"]["description"]}</p>
 <pre class="code-block">{app["appendix_d"]["log_summary"]}</pre>
 """)
 
-    # Appendix E
+    # Appendix E - Part 1
     html.append(f"""
 <div class="page-break"></div>
-<h1 class="chapter-title">{app["appendix_e"]["title"]}</h1>
-<p><em>{app["appendix_e"]["description"]}</em></p>
-<pre class="code-block">{app["appendix_e"]["mermaid_sources"]}</pre>
+<h1 class="chapter-title">{app["appendix_e"]["title"]} (PART 1)</h1>
+<p class="appendix-desc">{app["appendix_e"]["description_part_1"]}</p>
+<pre class="code-block">{app["appendix_e"]["mermaid_sources_part_1"]}</pre>
+""")
+
+    # Appendix E - Part 2
+    html.append(f"""
+<div class="page-break"></div>
+<h1 class="chapter-title">{app["appendix_e"]["title"]} (PART 2)</h1>
+<p class="appendix-desc">{app["appendix_e"]["description_part_2"]}</p>
+<pre class="code-block">{app["appendix_e"]["mermaid_sources_part_2"]}</pre>
 """)
 
     html.append("""
@@ -1382,6 +1405,8 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
     def write_docx_chapter(ch_data):
         add_chapter_title(ch_data["title"])
         for sec in ch_data["sections"]:
+            if sec.get("page_break_before"):
+                doc.add_page_break()
             add_heading2(sec["heading"])
             for p_text in sec["paragraphs"]:
                 add_p(p_text)
@@ -1459,7 +1484,7 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
         code_p.paragraph_format.space_before = Pt(4)
         code_p.paragraph_format.space_after  = Pt(4)
         set_para_shading(code_p, RGBColor(0xf1, 0xf5, 0xf9))
-        code_run = code_p.add_run(get_code_snippet(app[app_key]["file_path"], 70))
+        code_run = code_p.add_run(get_code_snippet(app[app_key]["file_path"], 52))
         code_run.font.name = "Courier New"
         code_run.font.size = Pt(8.5)
 
@@ -1471,13 +1496,21 @@ def build_docx_report(toc_items=None, fig_map=None, tbl_map=None):
     log_run.font.name = "Courier New"
     log_run.font.size = Pt(8.5)
 
-    add_chapter_title(app["appendix_e"]["title"])
-    add_p(app["appendix_e"]["description"], italic=True, color=DARK_BLUE)
-    me_p = doc.add_paragraph()
-    set_para_shading(me_p, RGBColor(0xf1, 0xf5, 0xf9))
-    me_run = me_p.add_run(app["appendix_e"]["mermaid_sources"])
-    me_run.font.name = "Courier New"
-    me_run.font.size = Pt(8.0)
+    add_chapter_title(app["appendix_e"]["title"] + " (PART 1)")
+    add_p(app["appendix_e"]["description_part_1"], italic=True, color=DARK_BLUE)
+    me_p1 = doc.add_paragraph()
+    set_para_shading(me_p1, RGBColor(0xf1, 0xf5, 0xf9))
+    me_run1 = me_p1.add_run(app["appendix_e"]["mermaid_sources_part_1"])
+    me_run1.font.name = "Courier New"
+    me_run1.font.size = Pt(8.0)
+
+    add_chapter_title(app["appendix_e"]["title"] + " (PART 2)")
+    add_p(app["appendix_e"]["description_part_2"], italic=True, color=DARK_BLUE)
+    me_p2 = doc.add_paragraph()
+    set_para_shading(me_p2, RGBColor(0xf1, 0xf5, 0xf9))
+    me_run2 = me_p2.add_run(app["appendix_e"]["mermaid_sources_part_2"])
+    me_run2.font.name = "Courier New"
+    me_run2.font.size = Pt(8.0)
 
     out_docx_path = os.path.join(DOCS_DIR, "Noetrix_Project_Master_Report.docx")
     try:
