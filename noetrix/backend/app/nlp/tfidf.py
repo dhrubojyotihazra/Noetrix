@@ -32,8 +32,35 @@ GENERIC_NON_SKILLS = {
     "quantitative", "level", "looking", "join", "help", "train", "training", "applied",
     "services", "platforms", "solutions", "position", "associate", "junior", "senior",
     "lead", "principal", "staff", "intern", "internship", "technologies", "tools",
-    "track", "record", "practical", "solid", "foundation", "hands", "hands-on", "build"
+    "track", "record", "practical", "solid", "foundation", "hands", "hands-on", "build",
+    # Additional generic words and junk n-gram tokens
+    "using", "used", "use", "related", "requires", "require", "seeking", "seek", "time", "times",
+    "inference", "science", "ci", "cd", "real", "high", "based", "environment", "environments",
+    "production", "data", "system", "systems", "project", "projects", "methods", "techniques",
+    "approaches", "tasks", "task", "pipeline", "pipelines", "stack", "stacks", "architecture",
+    "architectures", "infrastructure", "infrastructures", "process", "processes", "code",
+    "software", "hardware"
 }
+
+
+def _is_filtered_noun(phrase: str) -> bool:
+    """Check if phrase consists of valid nouns or noun phrases, excluding verbs/participles/adverbs."""
+    words = phrase.split()
+    if any(w in STOP_WORDS or w in GENERIC_NON_SKILLS for w in words):
+        return False
+    try:
+        import nltk
+        tags = nltk.pos_tag(words)
+        # Must not contain verbs, adverbs, prepositions, conjunctions, pronouns
+        if any(tag.startswith(("VB", "RB", "IN", "CC", "PRP", "MD")) for _, tag in tags):
+            return False
+        # Head word (last token) must be a noun
+        return tags[-1][1].startswith("NN")
+    except Exception:
+        verb_adj_endings = ("ing", "ed", "ly", "able", "ible")
+        if any(w.endswith(verb_adj_endings) for w in words):
+            return False
+        return True
 
 
 def extract_jd_keywords(jd_text: str, top_n: int = 20) -> list[str]:
@@ -65,25 +92,31 @@ def extract_jd_keywords(jd_text: str, top_n: int = 20) -> list[str]:
         sorted_indices = scores.argsort()[::-1]
         for idx in sorted_indices:
             feat = feature_names[idx].strip().lower()
-            if (
-                len(feat) > 2
-                and not feat.isnumeric()
-                and feat not in GENERIC_NON_SKILLS
-                and not any(g in feat.split() for g in ["years", "qualifications", "experience"])
-            ):
-                # If single word, only keep if technical or in taxonomy
-                if len(feat.split()) == 1:
-                    if feat in ALL_TAXONOMY_SKILLS or len(feat) >= 3:
-                        found_skills.add(feat)
-                else:
-                    found_skills.add(feat)
+            words = feat.split()
+            if len(feat) < 3 or feat.isnumeric():
+                continue
+            # Drop n-grams that contain stopwords or generic words
+            if any(w in STOP_WORDS or w in GENERIC_NON_SKILLS for w in words):
+                continue
+            if any(len(w) < 3 for w in words):
+                continue
+
+            # Keep only taxonomy skills and filtered nouns
+            if feat in ALL_TAXONOMY_SKILLS:
+                found_skills.add(feat)
+            elif _is_filtered_noun(feat):
+                found_skills.add(feat)
+
             if len(found_skills) >= top_n:
                 break
     except Exception:
         pass
 
-    # Ensure no generic non-skills slip through
-    clean_skills = [s for s in found_skills if s not in GENERIC_NON_SKILLS]
+    # Ensure no generic non-skills slip through, keeping only taxonomy skills and filtered nouns
+    clean_skills = [
+        s for s in found_skills
+        if s not in GENERIC_NON_SKILLS and (s in ALL_TAXONOMY_SKILLS or _is_filtered_noun(s))
+    ]
     return sorted(clean_skills)[:top_n]
 
 

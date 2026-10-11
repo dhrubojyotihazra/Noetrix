@@ -55,3 +55,25 @@ def test_rules_fallback_when_llm_mode_off(monkeypatch):
     assert res.extraction_method == "rules"
     assert "python" in [s.lower() for s in res.must_have_skills]
     assert res.min_experience_years == 3.0
+
+
+def test_extract_jd_keywords_drops_junk_ngrams():
+    """extract_jd_keywords must drop junk n-grams like 'using', 'time inference', 'science related', 'transformers ci'."""
+    from app.nlp.tfidf import extract_jd_keywords
+    jd_text = """
+    We are seeking a Machine Learning Engineer using PyTorch and Docker.
+    The role requires real-time inference, Computer Science or related degree,
+    and hands-on experience with transformers, CI/CD pipelines.
+    """
+    kws = extract_jd_keywords(jd_text)
+    assert "using" not in kws
+    assert "time inference" not in kws
+    assert "science related" not in kws
+    assert "transformers ci" not in kws
+    assert "requires" not in kws
+    assert "seeking" not in kws
+    assert "related" not in kws
+    assert "pytorch" in kws
+    assert "docker" in kws
+    assert "transformers" in kws
+

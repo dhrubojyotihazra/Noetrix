@@ -17,7 +17,11 @@ STOP_WORDS = {
     "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't",
     "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why",
     "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your",
-    "yours", "yourself", "yourselves"
+    "yours", "yourself", "yourselves",
+    # Additional generic stopwords & verbs
+    "using", "uses", "used", "use", "related", "requires", "require", "required", "seeking", "seek", "seeks",
+    "looking", "look", "across", "within", "per", "via", "etc", "eg", "ie", "including", "includes", "included",
+    "well", "also", "able", "like", "either"
 }
 
 # Blocklist to avoid false-positive tech skills
