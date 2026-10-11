@@ -36,8 +36,12 @@ The following open-source projects served strictly as high-level conceptual blue
 | Dependency | License | Purpose in Noetrix |
 | :--- | :--- | :--- |
 | **FastAPI** | MIT | High-performance backend REST API framework |
+| **uvicorn** | BSD 3-Clause | ASGI production web server runtime for FastAPI |
 | **Pydantic** | MIT | Deterministic data validation and JSON schema enforcement |
+| **pdfplumber** | MIT | Layout-aware PDF text extraction and single-column bounding box inspection |
+| **python-docx** | MIT | Word document (.docx) structure and paragraph extraction |
 | **ReportLab** | BSD | Pure-Python single-column PDF document generation |
+| **NumPy** | BSD 3-Clause | Fast vector math and dense matrix operations |
 | **RapidFuzz** | MIT | Levenshtein and token-set fuzzy matching for source grounding |
 | **Sentence-Transformers** | Apache 2.0 | Dense semantic embeddings (`all-MiniLM-L6-v2`) |
 | **scikit-learn** | BSD 3-Clause | TF-IDF feature extraction and cosine metrics |
@@ -45,3 +49,4 @@ The following open-source projects served strictly as high-level conceptual blue
 | **Next.js** | MIT | React application framework |
 | **Tailwind CSS** | MIT | Utility-first CSS design system |
 | **Lucide React** | ISC | Modern UI icons |
+

@@ -1,6 +1,6 @@
 """Candidate Resume Tailoring & Bullet Optimization Service.
 
-Implements grounded, truthful resume optimization modeled after open-source ATS analyzers (Resume-Matcher).
+Original clean-room implementation of grounded, truthful resume optimization conceptually inspired by open-source ATS analyzer workflows.
 Guarantees:
 - Never invents numbers or metrics (Google XYZ framing with honest user metrics).
 - Never injects unconfirmed skills into candidate profiles.
