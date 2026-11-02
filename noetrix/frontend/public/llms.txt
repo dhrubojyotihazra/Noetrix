@@ -1,0 +1,31 @@
+# Noetrix — Explainable ATS Resume Screening & Tailoring Platform
+
+> Noetrix is a free, deterministic, dual-portal Applicant Tracking System (ATS) simulation engine with client-side PII scrubbing and ephemeral zero-retention processing.
+
+## Core Features & Capabilities
+- **Explainable 6-Metric Scoring**: Decomposes candidate resumes across Placement-Weighted Keyword Match (0.30), Dense Semantic Cosine Alignment (0.20), Experience & Action Verbs (0.20), Education (0.10), Quantified Impact Ratio (0.10), and ATS Formatting Hygiene (0.10).
+- **50% Soft Knockout Ceiling**: Prevents adversarial keyword stuffing and resume gaming by capping composite scores at 50 points if an applicant cannot demonstrate contextual evidence for at least 50% of mandatory role criteria.
+- **Zero-Fabrication AI Tailoring**: Guardrailed resume bullet optimization using an AST-level token cross-checker that guarantees 0% hallucinated skills, metrics, or credentials.
+- **Candidate Privacy & Stateless Processing**: Client-side PII scrubbing with in-memory execution; zero candidate resumes are saved or retained on servers.
+- **Recruiter Batch Ingestion & 6-Tier Tie-Breaking**: Deterministic bulk screening for up to 50 resumes with mathematical rank auditability.
+
+## Key Performance Telemetry
+- Average Resume Scoring Latency: 42.4 milliseconds
+- Mathematical Score Reproducibility: 100% (zero jitter across runs)
+- Metric Hallucination Rate: 0% verified
+
+## Key URLs
+- Live Web Application: https://noetrix-virid.vercel.app/
+- Candidate Screening Portal: https://noetrix-virid.vercel.app/candidate/analyze
+- Interactive Resume Tailor: https://noetrix-virid.vercel.app/candidate/editor
+- Recruiter Batch Door: https://noetrix-virid.vercel.app/recruiter/setup
+- Scoring Engine Documentation: https://noetrix-virid.vercel.app/how-scoring-works
+- Glassmorphism Monitoring Dashboard: https://noetrix-virid.vercel.app/dashboard
+- Open-Source GitHub Repository: https://github.com/dhrubojyotihazra/Noetrix
+- Backend OpenAPI Swagger Docs: https://noetrix-api.onrender.com/docs
+
+## Technical Taxonomy
+- Frontend Stack: Next.js 15, React 19, Tailwind CSS, Lucide Icons, jsPDF
+- Backend Stack: FastAPI, Python 3.11, Sentence-Transformers (all-MiniLM-L6-v2), Scikit-Learn
+- Deployment: Vercel (Frontend), Render (Backend API)
+- Licensing & Development: Academic Capstone Project, Brainware University in association with Ardent Computech Pvt. Ltd.

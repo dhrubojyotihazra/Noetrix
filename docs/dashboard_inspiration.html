@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flux AI / Noetrix - Modern Glassmorphism Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              yellow: '#FACC15',
+              dark: '#0B1524',
+              card: 'rgba(255, 255, 255, 0.65)',
+              border: 'rgba(255, 255, 255, 0.8)',
+            }
+          },
+          animation: {
+            'blob': 'blob 14s infinite alternate ease-in-out',
+            'pulse-subtle': 'pulseSubtle 3s infinite ease-in-out',
+            'fade-slide-down': 'fadeSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            'spin-slow': 'spin 12s linear infinite',
+          },
+          keyframes: {
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '50%': { transform: 'translate(40px, -30px) scale(1.08)' },
+              '100%': { transform: 'translate(-25px, 20px) scale(0.96)' }
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+              '50%': { opacity: '0.85', transform: 'scale(0.98)' }
+            },
+            fadeSlideDown: {
+              '0%': { opacity: '0', transform: 'translateY(-10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Ultra-crisp Glassmorphism System */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.62);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px 0 rgba(0, 0, 0, 0.02);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.07), 0 4px 12px 0 rgba(0, 0, 0, 0.03);
+      border-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .glass-button {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      transition: all 0.2s ease;
+    }
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+
+    /* Segmented Progress Blocks */
+    .seg-block {
+      transition: all 0.2s ease;
+    }
+    .seg-block:hover {
+      transform: scaleY(1.2);
+    }
+
+    /* Sparkline bar hover */
+    .spark-bar {
+      transition: height 0.35s ease, background-color 0.2s ease, transform 0.15s ease;
+    }
+    .spark-bar:hover {
+      transform: scaleY(1.1);
+      transform-origin: bottom;
+    }
+
+    /* Gauge Arc Animation */
+    .gauge-arc {
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#E9EEF4] text-slate-800 antialiased min-h-screen relative overflow-x-hidden selection:bg-yellow-200">
+
+  <!-- ============================================================== -->
+  <!-- VIBRANT ORGANIC MESH GRADIENT BLOBS (Matching Reference Image) -->
+  <!-- ============================================================== -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <!-- Main Center-Right Sunset Glow -->
+    <div class="absolute top-[8%] right-[16%] w-[680px] h-[580px] rounded-full bg-gradient-to-tr from-[#FFAA5B]/55 via-[#FBBF24]/40 to-[#FDE68A]/60 blur-[110px] animate-blob"></div>
+    <!-- Soft Peach Highlight -->
+    <div class="absolute top-[28%] right-[30%] w-[460px] h-[400px] rounded-full bg-[#FB923C]/35 blur-[95px] animate-blob" style="animation-delay: -5s;"></div>
+    <!-- Soft Sky/Cyan Accent (Bottom Left) -->
+    <div class="absolute bottom-[2%] left-[4%] w-[520px] h-[420px] rounded-full bg-[#BAE6FD]/40 blur-[115px] animate-blob" style="animation-delay: -8s;"></div>
+    <!-- Pale Lime / Golden Tone (Top Left) -->
+    <div class="absolute top-[-5%] left-[10%] w-[420px] h-[360px] rounded-full bg-[#FEF08A]/35 blur-[90px]"></div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 max-w-[1540px] mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+
+    <!-- ============================================================== -->
+    <!-- TOP NAVIGATION BAR                                             -->
+    <!-- ============================================================== -->
+    <header class="glass-card rounded-2xl px-5 py-3 flex items-center justify-between border border-white/80">
+      
+      <!-- Left: Brand Logo & Navigation Icons -->
+      <div class="flex items-center gap-6">
+        <!-- Logo -->
+        <div class="flex items-center gap-2 cursor-pointer select-none" onclick="toggleAppMode()">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center text-white shadow-sm ring-2 ring-white/60">
+            <svg class="w-4 h-4 text-amber-300 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <span id="brandName" class="text-xl font-bold tracking-tight text-slate-900">Flux</span>
+        </div>
+
+        <!-- Center Tabs / Tool Icons -->
+        <div class="hidden md:flex items-center gap-1.5 pl-3 border-l border-slate-300/60">
+          <!-- Active Pill: Dashboard -->
+          <button class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-xs font-medium shadow-sm hover:bg-slate-800 transition">
+            <svg class="w-3.5 h-3.5 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+            <span>Dashboard</span>
+          </button>
+
+          <!-- Circular Icon Buttons -->
+          <button title="Code / Terminal" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white/70 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </button>
+
+          <button title="Models & Connectors" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white/70 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          </button>
+
+          <button title="Pipelines & Graphs" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white/70 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+
+          <button title="Intelligence / Sparkles" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white/70 transition">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+          </button>
+
+          <button title="Audit & Guardrails" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white/70 transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </button>
+
+          <button title="Add Component" class="w-7 h-7 rounded-full bg-white/70 flex items-center justify-center text-slate-700 hover:bg-white hover:text-slate-950 transition border border-white">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Search, Language, User Profile -->
+      <div class="flex items-center gap-3">
+        <!-- Live System Pulse -->
+        <div class="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-semibold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 -ml-3.5"></span>
+          <span>System Healthy</span>
+        </div>
+
+        <!-- Search button -->
+        <button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:bg-white/80 transition" title="Search (Cmd+K)">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+
+        <!-- Notification Bell -->
+        <button class="relative w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:bg-white/80 transition" onclick="showToast('You have 3 unread screening alerts.')">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+        </button>
+
+        <!-- Language Pill -->
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 border border-white text-xs text-slate-700 cursor-pointer hover:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <span class="font-medium">English</span>
+          <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+
+        <!-- Mode Preset Switcher -->
+        <button onclick="toggleAppMode()" class="px-2.5 py-1 rounded-full bg-slate-900/10 hover:bg-slate-900/15 border border-white text-[11px] font-semibold text-slate-800 transition flex items-center gap-1">
+          <span id="modeBadge">Flux UI</span>
+          <svg class="w-3 h-3 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"></polyline></svg>
+        </button>
+
+        <!-- User Avatar -->
+        <div class="relative cursor-pointer" onclick="showToast('Profile: Aisha Rahman (Lead AI Recruiter & ML Ops)')">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Aisha" class="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow-sm" />
+          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- WELCOME BANNER & ACTION BAR                                    -->
+    <!-- ============================================================== -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mt-1">
+      <div>
+        <h1 id="welcomeTitle" class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+          Welcome Back, Aisha
+          <span class="inline-block text-2xl animate-bounce">👋</span>
+        </h1>
+        <p id="welcomeSubtitle" class="text-slate-500 text-sm md:text-base mt-1 font-normal">
+          Your AI environment is monitoring agents, runs and compliance.
+        </p>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="flex items-center flex-wrap gap-2.5">
+        <!-- New Agent Button -->
+        <button onclick="openNewModal('agent')" class="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-slate-800 flex items-center gap-2 hover:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span id="btnTextNew">New Agent</span>
+        </button>
+
+        <!-- Connect Data -->
+        <button onclick="openNewModal('data')" class="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-slate-800 flex items-center gap-2 hover:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          <span>Connect Data</span>
+        </button>
+
+        <!-- Review Approval -->
+        <button onclick="openNewModal('review')" class="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-slate-800 flex items-center gap-2 hover:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Review Approval</span>
+        </button>
+
+        <!-- View Workspace -->
+        <button onclick="openNewModal('workspace')" class="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-slate-800 flex items-center gap-2 hover:bg-white transition">
+          <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+          <span>View Workspace</span>
+        </button>
+
+        <!-- Bright Yellow Highlight CTA: Launch Demo -->
+        <button onclick="triggerDemoRun()" id="launchDemoBtn" class="px-5 py-2 rounded-xl bg-[#FACC15] hover:bg-[#EAB308] text-slate-950 font-bold text-xs flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition transform">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Launch Demo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TOP ROW: GETTING STARTED (Left) & COMPLIANCE PULSE (Right)      -->
+    <!-- ============================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      
+      <!-- 1. GETTING STARTED CHECKLIST (Col Span 7) -->
+      <div class="lg:col-span-7 glass-card rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900 tracking-tight">Getting Started</h2>
+              <p class="text-slate-500 text-xs mt-1">This checklist highlights the onboarding milestone you need to complete</p>
+            </div>
+            <span id="checklistPercentage" class="text-sm font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">50%</span>
+          </div>
+
+          <!-- Progress Bar Track -->
+          <div class="w-full bg-slate-200/70 h-2.5 rounded-full mt-4 overflow-hidden p-0.5">
+            <div id="checkprogressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500 ease-out" style="width: 50%;"></div>
+          </div>
+
+          <!-- Checklist Items -->
+          <div class="mt-5 space-y-3" id="checklistContainer">
+            
+            <!-- Item 1 (Checked) -->
+            <div onclick="toggleCheckItem(1)" class="group flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/60 transition cursor-pointer">
+              <div id="checkIcon1" class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span id="checkText1" class="text-sm font-medium text-slate-800 line-through opacity-70 group-hover:opacity-100 transition">Create your first workspace</span>
+            </div>
+
+            <!-- Item 2 (Checked) -->
+            <div onclick="toggleCheckItem(2)" class="group flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/60 transition cursor-pointer">
+              <div id="checkIcon2" class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span id="checkText2" class="text-sm font-medium text-slate-800 line-through opacity-70 group-hover:opacity-100 transition">Deploy an AI agent</span>
+            </div>
+
+            <!-- Item 3 (Unchecked) -->
+            <div onclick="toggleCheckItem(3)" class="group flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/60 transition cursor-pointer">
+              <div id="checkIcon3" class="w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center flex-shrink-0 group-hover:border-slate-500 transition">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span id="checkText3" class="text-sm font-medium text-slate-800 group-hover:text-slate-950 transition">Configure data connectors</span>
+            </div>
+
+            <!-- Item 4 (Unchecked) -->
+            <div onclick="toggleCheckItem(4)" class="group flex items-center gap-3.5 p-2 rounded-xl hover:bg-white/60 transition cursor-pointer">
+              <div id="checkIcon4" class="w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center flex-shrink-0 group-hover:border-slate-500 transition">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <span id="checkText4" class="text-sm font-medium text-slate-800 group-hover:text-slate-950 transition">Set up approval workflows</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
+          <span>Click any milestone to mark complete / incomplete</span>
+          <span class="text-emerald-700 font-semibold cursor-pointer hover:underline" onclick="resetChecklist()">Reset</span>
+        </div>
+      </div>
+
+      <!-- 2. COMPLIANCE PULSE (Col Span 5 - Speedometer / Gauge) -->
+      <div class="lg:col-span-5 glass-card rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-900 tracking-tight">Compliance pulse</h2>
+            <button class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700" onclick="showToast('Compliance audit status refreshed')">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            </button>
+          </div>
+
+          <!-- Speedometer Semicircle SVG Gauge -->
+          <div class="relative w-64 mx-auto mt-2 flex flex-col items-center">
+            <svg viewBox="0 0 200 115" class="w-full">
+              <!-- Background Track Arc -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#E2E8F0" stroke-width="14" stroke-linecap="round"/>
+              
+              <!-- Left Segment: Orange (Risk / Guard) -->
+              <path d="M 20 100 A 80 80 0 0 1 55 45" fill="none" stroke="#F97316" stroke-width="14" stroke-linecap="round" class="cursor-pointer hover:opacity-80 transition" onclick="showToast('Fairness Risk Guard: 22% weight')"/>
+              
+              <!-- Center Segment: Green (Policy Coverage) -->
+              <path d="M 64 38 A 80 80 0 0 1 136 38" fill="none" stroke="#22C55E" stroke-width="14" stroke-linecap="round" class="cursor-pointer hover:opacity-80 transition" onclick="showToast('Primary Policy Coverage: 94% passed')"/>
+              
+              <!-- Right Segment: Blue (PII & Integrity) -->
+              <path d="M 145 45 A 80 80 0 0 1 180 100" fill="none" stroke="#3B82F6" stroke-width="14" stroke-linecap="round" class="cursor-pointer hover:opacity-80 transition" onclick="showToast('Stateless Data Privacy: 100% active')"/>
+            </svg>
+
+            <!-- Center Reading Inside Arch -->
+            <div class="absolute bottom-1 text-center select-none">
+              <span class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Policy Coverage</span>
+              <span id="gaugeValue" class="text-3xl font-extrabold text-slate-900 tracking-tight">94%</span>
+            </div>
+          </div>
+
+          <!-- Status List -->
+          <div class="mt-4 space-y-2.5">
+            <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-white/50 border border-white">
+              <span class="font-medium text-slate-700">Data Privacy (DAT-001)</span>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">Active</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-white/50 border border-white">
+              <span class="font-medium text-slate-700">Applicant Bias (APR-104)</span>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">Active</span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-white/50 border border-white">
+              <span class="font-medium text-slate-700">Security Tracking (SEC-008)</span>
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold text-[10px]">Audit</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MIDDLE ROW: 4 METRIC CARDS WITH INTERACTIVE SPARKLINE CHARTS   -->
+    <!-- ============================================================== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      
+      <!-- CARD 1: TOKENS -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Tokens</span>
+            <button class="text-slate-300 hover:text-slate-600 transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            </button>
+          </div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl font-extrabold text-slate-900 tracking-tight" id="tokenStat">2.4M</span>
+            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center">
+              ▲ 7.8%
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400 block mt-0.5">Compare from last 24hrs</span>
+        </div>
+
+        <!-- Sparkline: Bar Chart with 8h indicator -->
+        <div class="mt-4 pt-2 relative">
+          <div class="flex items-end justify-between h-10 gap-1" id="tokensSparkline">
+            <!-- Dynamically generated bars via JS -->
+          </div>
+          <span class="absolute -top-3.5 right-6 text-[10px] font-bold text-slate-400">8h</span>
+        </div>
+      </div>
+
+      <!-- CARD 2: COST -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Cost</span>
+            <button class="text-slate-300 hover:text-slate-600 transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            </button>
+          </div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl font-extrabold text-slate-900 tracking-tight" id="costStat">$127</span>
+            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center">
+              ▲ 1.5%
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400 block mt-0.5">Compare from last 24hrs</span>
+        </div>
+
+        <!-- Sparkline: Smooth Wave Area Chart with 16h indicator -->
+        <div class="mt-4 pt-2 relative">
+          <svg viewBox="0 0 100 35" class="w-full h-10 overflow-visible">
+            <defs>
+              <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10B981" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#10B981" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <!-- Area fill -->
+            <path d="M 0 35 Q 15 32, 28 26 T 55 18 T 80 8 L 88 15 L 100 24 L 100 35 Z" fill="url(#waveGrad)"/>
+            <!-- Wave line -->
+            <path d="M 0 32 Q 15 30, 28 26 T 55 18 T 80 8 L 88 15 L 100 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+            <!-- Peak Point dot -->
+            <circle cx="80" cy="8" r="2.5" fill="#10B981" class="animate-ping"/>
+            <circle cx="80" cy="8" r="2.5" fill="#10B981"/>
+          </svg>
+          <span class="absolute -top-3.5 right-4 text-[10px] font-bold text-slate-400">16h</span>
+        </div>
+      </div>
+
+      <!-- CARD 3: SUCCESS RATE -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Success Rate</span>
+            <button class="text-slate-300 hover:text-slate-600 transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            </button>
+          </div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl font-extrabold text-slate-900 tracking-tight" id="successStat">97.3%</span>
+            <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center">
+              ▲ 1.2%
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400 block mt-0.5">Compare from last month</span>
+        </div>
+
+        <!-- Sparkline: Dual-bar histogram with 24h indicator -->
+        <div class="mt-4 pt-2 relative">
+          <div class="flex items-end justify-between h-10 gap-1.5" id="successSparkline">
+            <!-- Dynamically generated bars via JS -->
+          </div>
+          <span class="absolute -top-3.5 right-6 text-[10px] font-bold text-slate-400">24h</span>
+        </div>
+      </div>
+
+      <!-- CARD 4: P95 LATENCY -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">P95 Latency</span>
+            <button class="text-slate-300 hover:text-slate-600 transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            </button>
+          </div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl font-extrabold text-slate-900 tracking-tight" id="latencyStat">234ms</span>
+            <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md flex items-center">
+              ▼ 4.5%
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400 block mt-0.5">Compare from last month</span>
+        </div>
+
+        <!-- Sparkline: Multi-tone stacked area graph with 12h indicator -->
+        <div class="mt-4 pt-2 relative">
+          <svg viewBox="0 0 100 35" class="w-full h-10">
+            <defs>
+              <linearGradient id="latencyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#F43F5E" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#FBBF24" stop-opacity="0.05"/>
+              </linearGradient>
+            </defs>
+            <path d="M 0 26 Q 20 20, 35 28 T 60 18 T 85 24 L 100 20 L 100 35 L 0 35 Z" fill="url(#latencyGrad)"/>
+            <path d="M 0 26 Q 20 20, 35 28 T 60 18 T 85 24 L 100 20" fill="none" stroke="#F43F5E" stroke-width="1.8"/>
+            <!-- Marker dot -->
+            <circle cx="60" cy="18" r="2.5" fill="#F43F5E"/>
+          </svg>
+          <span class="absolute -top-3.5 right-6 text-[10px] font-bold text-slate-400">12h</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- BOTTOM ROW: 30-DAY FORECAST (Left) & LIVE RUNS STREAM (Right)   -->
+    <!-- ============================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-6">
+      
+      <!-- 1. 30-DAY COST FORECAST (Col Span 5) -->
+      <div class="lg:col-span-5 glass-card rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-500">30-day Cost Forecast</h2>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-3xl font-extrabold text-slate-900 tracking-tight" id="forecastStat">$3,890</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">+1.5% Projected spend for next 30 days</p>
+
+          <!-- Segmented Progress Bar Matrix -->
+          <div class="mt-6">
+            <!-- Percent row -->
+            <div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1.5 px-0.5">
+              <span>40%</span>
+              <span class="pl-14">30%</span>
+              <span>40%</span>
+            </div>
+
+            <!-- Segmented Bar Container -->
+            <div class="flex items-center gap-2">
+              
+              <!-- Segment 1: Cyan / Blue dotted ticks (Unused) -->
+              <div class="flex-1 flex gap-1 items-center" title="40% Unused capacity">
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-sky-400 seg-block"></div>
+              </div>
+
+              <!-- Segment 2: Orange solid bar (Used) -->
+              <div class="w-24 h-3.5 rounded-sm bg-gradient-to-r from-orange-500 to-amber-500 shadow-sm" title="30% Active used quota"></div>
+
+              <!-- Segment 3: Green segmented blocks (Reserved) -->
+              <div class="flex-1 flex gap-1 items-center justify-end" title="40% Reserved enterprise buffer">
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+                <div class="h-3 w-1.5 rounded-sm bg-emerald-500 seg-block"></div>
+              </div>
+            </div>
+
+            <!-- Legend Row -->
+            <div class="flex items-center gap-5 mt-4 text-xs">
+              <div class="flex items-center gap-1.5 text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                <span>Unused</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                <span>Used</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-600">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Reserved</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidence Bottom Box -->
+        <div class="mt-6 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 text-slate-600 font-medium">
+            <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>Confidence</span>
+          </div>
+          <div>
+            <span class="font-extrabold text-slate-900">87%</span>
+            <span class="text-slate-400 ml-1">in last month</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. LIVE RUNS STREAM TABLE (Col Span 7) -->
+      <div class="lg:col-span-7 glass-card rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <!-- Table Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">Live Runs Stream</h2>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button id="streamToggleBtn" onclick="toggleStreamSimulation()" class="px-2.5 py-1 rounded-full bg-white/70 hover:bg-white text-[11px] font-semibold text-slate-700 border border-white transition flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="streamDot"></span>
+                <span id="streamBtnText">Stream: ON</span>
+              </button>
+              <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white font-bold text-[11px] shadow-sm">Live (8)</span>
+            </div>
+          </div>
+
+          <!-- Interactive Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200/80 text-slate-400 font-semibold">
+                  <th class="pb-2.5 pl-2">Name</th>
+                  <th class="pb-2.5">Time</th>
+                  <th class="pb-2.5">Latency</th>
+                  <th class="pb-2.5 text-right pr-2">Status</th>
+                </tr>
+              </thead>
+              <tbody id="runsTableBody" class="divide-y divide-slate-100/80">
+                
+                <!-- Row 1 -->
+                <tr class="group hover:bg-white/80 transition cursor-pointer" onclick="inspectRun('Claims Checker', '2.1s', 'Live', '98.5% match score, verified with 0 PII leak')">
+                  <td class="py-3 pl-2 font-medium text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Claims Checker</span>
+                  </td>
+                  <td class="py-3 text-slate-500">3 min ago</td>
+                  <td class="py-3 text-slate-600 font-mono">2.1s</td>
+                  <td class="py-3 text-right pr-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-800 font-bold text-[10px]">Live</span>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr class="group hover:bg-white/80 transition cursor-pointer" onclick="inspectRun('KYC Validator', '1.8s', 'Live', 'Document biometric validation passed')">
+                  <td class="py-3 pl-2 font-medium text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>KYC Validator</span>
+                  </td>
+                  <td class="py-3 text-slate-500">4 min ago</td>
+                  <td class="py-3 text-slate-600 font-mono">1.8s</td>
+                  <td class="py-3 text-right pr-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-800 font-bold text-[10px]">Live</span>
+                  </td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr class="group hover:bg-white/80 transition cursor-pointer" onclick="inspectRun('Fraud Monitor', '15s', 'Paused', 'Triggered rule: High anomaly velocity')">
+                  <td class="py-3 pl-2 font-medium text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    <span>Fraud Monitor</span>
+                  </td>
+                  <td class="py-3 text-slate-500">7 min ago</td>
+                  <td class="py-3 text-slate-600 font-mono">15s</td>
+                  <td class="py-3 text-right pr-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold text-[10px]">Paused</span>
+                  </td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr class="group hover:bg-white/80 transition cursor-pointer" onclick="inspectRun('Audit Analyzer', '1.2s', 'Live', 'Deterministic tie-breaking verified')">
+                  <td class="py-3 pl-2 font-medium text-slate-800 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Audit Analyzer</span>
+                  </td>
+                  <td class="py-3 text-slate-500">10 min ago</td>
+                  <td class="py-3 text-slate-600 font-mono">1.2s</td>
+                  <td class="py-3 text-right pr-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-800 font-bold text-[10px]">Live</span>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table footer helper -->
+        <div class="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
+          <span>Click any run row to inspect telemetry & logs</span>
+          <span class="text-slate-600 font-medium">Auto-refreshed every 4s</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SLIDE-OVER TELEMETRY INSPECTION MODAL                          -->
+  <!-- ============================================================== -->
+  <div id="inspectorDrawer" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 hidden transition-opacity flex justify-end" onclick="closeInspector(event)">
+    <div class="w-full max-w-md bg-white/95 backdrop-blur-2xl h-full shadow-2xl p-6 flex flex-col justify-between border-l border-white" onclick="event.stopPropagation()">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Run Telemetry</span>
+            <h3 id="inspectRunName" class="text-lg font-bold text-slate-900">Claims Checker</h3>
+          </div>
+          <button onclick="closeInspector()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">✕</button>
+        </div>
+
+        <div class="mt-5 space-y-4 text-xs">
+          <div>
+            <span class="text-slate-400 block font-medium">Status & Latency</span>
+            <div class="flex items-center gap-2 mt-1">
+              <span id="inspectRunStatus" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs">Live</span>
+              <span id="inspectRunLatency" class="font-mono text-slate-700 font-semibold">2.1s</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-slate-400 block font-medium">Execution Summary</span>
+            <p id="inspectRunDesc" class="mt-1 text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              Deterministic ATS parse execution with zero hallucination guarantee.
+            </p>
+          </div>
+
+          <div>
+            <span class="text-slate-400 block font-medium">Telemetry Trace Log</span>
+            <div class="mt-1 bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[11px] h-48 overflow-y-auto leading-relaxed">
+              [00:01.02] INGEST: Stream packet received<br>
+              [00:01.15] VALIDATOR: Schema verified (Zero-Fabrication)<br>
+              [00:01.42] EMBEDDING: Cosine alignment score = 0.941<br>
+              [00:01.78] KNOCKOUT: 50% must-have check passed<br>
+              [00:02.10] OUTPUT: Stateless ephemeral cache cleared<br>
+              [00:02.10] STATUS: SUCCESS (0 PII leaked)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button onclick="closeInspector()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Dismiss</button>
+        <button onclick="showToast('Diagnostic log downloaded'); closeInspector();" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800">Export JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl border border-slate-700 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2">
+    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC & REACTIVITY -->
+  <script>
+    // State
+    let isStreamActive = true;
+    let streamInterval = null;
+    let currentMode = 'flux'; // 'flux' | 'noetrix'
+    const checklistState = [true, true, false, false];
+
+    // Initialize Sparklines
+    function initSparklines() {
+      // 1. Tokens Sparkline Bars
+      const tokensContainer = document.getElementById('tokensSparkline');
+      tokensContainer.innerHTML = '';
+      const tokenHeights = [20, 35, 18, 45, 60, 25, 40, 75, 30, 85, 40, 50, 70, 90, 45, 60, 80, 55, 65, 95];
+      tokenHeights.forEach((h, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'w-1 rounded-t-sm spark-bar cursor-pointer ' + (i >= 16 ? 'bg-emerald-500' : 'bg-slate-300/70');
+        bar.style.height = h + '%';
+        bar.title = `T-${20 - i}h: ${(h * 24).toLocaleString()} tokens`;
+        tokensContainer.appendChild(bar);
+      });
+
+      // 2. Success Sparkline Dual Bars
+      const successContainer = document.getElementById('successSparkline');
+      successContainer.innerHTML = '';
+      const successHeights = [55, 70, 60, 80, 75, 90, 85, 98, 92, 97];
+      successHeights.forEach((h, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'w-1.5 rounded-t-sm spark-bar cursor-pointer ' + (h > 90 ? 'bg-emerald-500' : 'bg-slate-300');
+        bar.style.height = h + '%';
+        bar.title = `Batch ${i + 1}: ${h}% accuracy`;
+        successContainer.appendChild(bar);
+      });
+    }
+
+    // Interactive Checklist Toggle
+    function toggleCheckItem(itemIndex) {
+      const idx = itemIndex - 1;
+      checklistState[idx] = !checklistState[idx];
+      updateChecklistUI();
+      
+      const count = checklistState.filter(Boolean).length;
+      showToast(checklistState[idx] ? `Completed milestone ${itemIndex}!` : `Milestone ${itemIndex} marked incomplete`);
+    }
+
+    function updateChecklistUI() {
+      checklistState.forEach((isChecked, i) => {
+        const icon = document.getElementById(`checkIcon${i + 1}`);
+        const text = document.getElementById(`checkText${i + 1}`);
+        if (isChecked) {
+          icon.className = 'w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition';
+          text.className = 'text-sm font-medium text-slate-800 line-through opacity-70 transition';
+        } else {
+          icon.className = 'w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center flex-shrink-0 transition';
+          text.className = 'text-sm font-medium text-slate-800 transition';
+        }
+      });
+
+      const completed = checklistState.filter(Boolean).length;
+      const pct = Math.round((completed / checklistState.length) * 100);
+      document.getElementById('checklistPercentage').innerText = `${pct}%`;
+      document.getElementById('checkprogressBar').style.width = `${pct}%`;
+    }
+
+    function resetChecklist() {
+      checklistState.fill(false);
+      updateChecklistUI();
+      showToast('Checklist reset');
+    }
+
+    // Demo Run Simulation
+    function triggerDemoRun() {
+      const btn = document.getElementById('launchDemoBtn');
+      btn.classList.add('scale-95', 'opacity-75');
+      showToast('🚀 Running Live Simulation: Screening 4 candidate dossiers...');
+
+      setTimeout(() => {
+        btn.classList.remove('scale-95', 'opacity-75');
+        // Add fresh item to table
+        const newRun = {
+          name: currentMode === 'flux' ? 'Synth-Agent ' + Math.floor(Math.random() * 900 + 100) : 'Alex Chen (Senior ML)',
+          time: 'Just now',
+          latency: (Math.random() * 0.8 + 0.4).toFixed(2) + 's',
+          status: 'Live',
+          desc: 'Automated 6-metric scoring + Zero-Fabrication verified'
+        };
+        insertRunRow(newRun, true);
+
+        // Animate counter values
+        document.getElementById('tokenStat').innerText = (2.4 + Math.random() * 0.1).toFixed(1) + 'M';
+        document.getElementById('gaugeValue').innerText = '96%';
+        showToast('✅ Demo complete: Candidate match calibrated at 96%');
+      }, 1000);
+    }
+
+    // Streaming Table Real-time Simulation
+    const mockRunsPool = [
+      { name: 'NLP Scorer (v2)', latency: '0.42s', desc: 'Dense semantic cosine alignment finished' },
+      { name: 'PII Redactor', latency: '0.12s', desc: 'Stateless phone/email scrub complete' },
+      { name: 'ATS Parse Sanitizer', latency: '0.85s', desc: 'Font and two-column layout verified' },
+      { name: 'Tie-Breaker Matrix', latency: '0.24s', desc: '6-tier deterministic ranking shortlisted' },
+      { name: 'Guardrail Validator', latency: '1.45s', desc: '0% hallucination verification audit' }
+    ];
+
+    function insertRunRow(run, highlight = false) {
+      const tbody = document.getElementById('runsTableBody');
+      const tr = document.createElement('tr');
+      tr.className = `group hover:bg-white/80 transition cursor-pointer ${highlight ? 'bg-yellow-50/80 animate-fade-slide-down' : ''}`;
+      tr.onclick = () => inspectRun(run.name, run.latency, run.status, run.desc);
+      tr.innerHTML = `
+        <td class="py-3 pl-2 font-medium text-slate-800 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full ${run.status === 'Paused' ? 'bg-rose-500' : 'bg-emerald-500'}"></span>
+          <span>${run.name}</span>
+        </td>
+        <td class="py-3 text-slate-500">${run.time}</td>
+        <td class="py-3 text-slate-600 font-mono">${run.latency}</td>
+        <td class="py-3 text-right pr-2">
+          <span class="px-2.5 py-0.5 rounded-full ${run.status === 'Paused' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100/80 text-emerald-800'} font-bold text-[10px]">${run.status}</span>
+        </td>
+      `;
+      tbody.insertBefore(tr, tbody.firstChild);
+
+      // Keep max 5 rows
+      if (tbody.children.length > 5) {
+        tbody.removeChild(tbody.lastChild);
+      }
+    }
+
+    function toggleStreamSimulation() {
+      isStreamActive = !isStreamActive;
+      const dot = document.getElementById('streamDot');
+      const txt = document.getElementById('streamBtnText');
+      if (isStreamActive) {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+        txt.innerText = 'Stream: ON';
+        startStream();
+        showToast('Live stream simulation resumed');
+      } else {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-slate-400';
+        txt.innerText = 'Stream: OFF';
+        clearInterval(streamInterval);
+        showToast('Live stream paused');
+      }
+    }
+
+    function startStream() {
+      clearInterval(streamInterval);
+      streamInterval = setInterval(() => {
+        if (!isStreamActive) return;
+        const item = mockRunsPool[Math.floor(Math.random() * mockRunsPool.length)];
+        insertRunRow({
+          name: item.name,
+          time: 'Just now',
+          latency: item.latency,
+          status: Math.random() > 0.85 ? 'Paused' : 'Live',
+          desc: item.desc
+        }, true);
+      }, 4500);
+    }
+
+    // Inspector Slide-over Drawer
+    function inspectRun(name, latency, status, desc) {
+      document.getElementById('inspectRunName').innerText = name;
+      document.getElementById('inspectRunLatency').innerText = latency;
+      document.getElementById('inspectRunStatus').innerText = status;
+      document.getElementById('inspectRunStatus').className = status === 'Paused' ? 'px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold text-xs' : 'px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs';
+      document.getElementById('inspectRunDesc').innerText = desc || 'Stateless execution log verified.';
+      document.getElementById('inspectorDrawer').classList.remove('hidden');
+    }
+
+    function closeInspector() {
+      document.getElementById('inspectorDrawer').classList.add('hidden');
+    }
+
+    // Generic Modal
+    function openNewModal(type) {
+      showToast(`Opened modal for: ${type.toUpperCase()}`);
+    }
+
+    // Mode Toggle (Flux UI vs Noetrix ATS Preset)
+    function toggleAppMode() {
+      if (currentMode === 'flux') {
+        currentMode = 'noetrix';
+        document.getElementById('brandName').innerText = 'Noetrix';
+        document.getElementById('modeBadge').innerText = 'Noetrix ATS';
+        document.getElementById('welcomeTitle').innerHTML = 'Welcome Back, Dhrubojyoti <span class="inline-block text-2xl animate-bounce">👋</span>';
+        document.getElementById('welcomeSubtitle').innerText = 'Explainable Hybrid Resume Screening & Guardrailed AI Intelligence.';
+        document.getElementById('btnTextNew').innerText = 'Screen Resume';
+        showToast('Switched to Noetrix ATS preset');
+      } else {
+        currentMode = 'flux';
+        document.getElementById('brandName').innerText = 'Flux';
+        document.getElementById('modeBadge').innerText = 'Flux UI';
+        document.getElementById('welcomeTitle').innerHTML = 'Welcome Back, Aisha <span class="inline-block text-2xl animate-bounce">👋</span>';
+        document.getElementById('welcomeSubtitle').innerText = 'Your AI environment is monitoring agents, runs and compliance.';
+        document.getElementById('btnTextNew').innerText = 'New Agent';
+        showToast('Switched to Flux AI Studio preset');
+      }
+    }
+
+    // Toast Utility
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Init on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initSparklines();
+      startStream();
+    });
+  </script>
+</body>
+</html>
