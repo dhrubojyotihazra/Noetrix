@@ -14,9 +14,9 @@ def parse_job_description(raw_text: str, title: str | None = None) -> JDFeatures
     # Extract keywords
     extracted_keywords = extract_jd_keywords(raw_text, top_n=25)
 
-    # Detect minimum experience years (allow up to 3 words between 'years' and 'experience')
+    # Detect minimum experience years (allow up to 5 words between 'years' and 'experience')
     min_years = 0.0
-    exp_matches = re.findall(r"(\d+)\+?(?:\s*(?:to|-)\s*\d+)?\s*years?(?:\s+\w+){0,3}?\s+experience", raw_text, re.IGNORECASE)
+    exp_matches = re.findall(r"(\d+)\+?(?:\s*(?:to|-)\s*\d+)?\s*years?(?:\s+\w+){0,5}?\s+experience", raw_text, re.IGNORECASE)
     if exp_matches:
         try:
             min_years = float(exp_matches[0])
@@ -64,15 +64,20 @@ def parse_job_description(raw_text: str, title: str | None = None) -> JDFeatures
     current_mode = "general"
     for line in lines:
         lower_line = line.lower()
+        is_bullet = bool(re.match(r"^[\-\•\*\–\—\>]\s*|^\d+[\.\)]\s*", line.strip()))
+
         if any(h in lower_line for h in ["must have", "required", "requirements", "basic qualifications", "what you need"]):
             current_mode = "must_have"
-            continue
+            if not is_bullet and (line.strip().endswith(":") or len(line.strip().split()) <= 4):
+                continue
         elif any(h in lower_line for h in ["nice to have", "preferred", "bonus", "preferred qualifications"]):
             current_mode = "nice_to_have"
-            continue
+            if not is_bullet and (line.strip().endswith(":") or len(line.strip().split()) <= 4):
+                continue
         elif any(h in lower_line for h in ["responsibilities", "what you'll do", "what you will do"]):
             current_mode = "responsibilities"
-            continue
+            if not is_bullet and (line.strip().endswith(":") or len(line.strip().split()) <= 4):
+                continue
 
         if current_mode == "responsibilities":
             if line.startswith(("-", "•", "*")):
